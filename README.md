@@ -121,12 +121,6 @@ If you want to add the `OTA Service` to the advertising in the setup add
 pAdvertising->addServiceUUID(BLEOTA.getBLEOTAuuid());
 ```
 
-During the OTA running in case of disconnection abort the current update 
-```
-if (BLEOTA.isRunning()) {
-    BLEOTA.abort();
-}
-```
 Add to loop the process function
 ```
 BLEOTA.process();

@@ -20,4 +20,5 @@ init			KEYWORD2
 process			KEYWORD2
 isRunning		KEYWORD2
 abort			KEYWORD2
+progress	KEYWORD2
 getBLEOTAuuid	KEYWORD2
