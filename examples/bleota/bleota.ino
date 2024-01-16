@@ -90,9 +90,6 @@ void setup() {
 void loop() {
   //disconnecting
   if (!deviceConnected && oldDeviceConnected) {
-    if (BLEOTA.isRunning()) {
-      BLEOTA.abort();
-    }
     delay(500);                   // give the bluetooth stack the chance to get things ready
     pServer->startAdvertising();  // restart advertising
     Serial.println("start advertising");

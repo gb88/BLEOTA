@@ -1,0 +1,23 @@
+#######################################
+# Syntax Coloring Map For BLEOTA
+#######################################
+# Class
+#######################################
+
+BLEOTA	KEYWORD1
+
+#######################################
+# Methods and Functions
+#######################################
+
+begin			KEYWORD2
+setModel		KEYWORD2
+setSerialNumber	KEYWORD2
+setFWVersion	KEYWORD2
+setHWVersion	KEYWORD2
+setManufactuer	KEYWORD2
+init			KEYWORD2
+process			KEYWORD2
+isRunning		KEYWORD2
+abort			KEYWORD2
+getBLEOTAuuid	KEYWORD2

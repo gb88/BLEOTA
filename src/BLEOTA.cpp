@@ -139,6 +139,18 @@ void BLEOTAClass::abort(void) {
   Update.abort();
 }
 
+float BLEOTAClass::progress(void) {
+  if(_file_size > 0)
+  {
+	float temp = (float)_file_written;
+	temp /= _file_size;
+	temp *= 100;
+	return temp;
+  }
+	return 0;
+}
+
+
 const char* BLEOTAClass::getBLEOTAuuid(void) {
   return BLE_OTA_SERVICE_UUID;
 }
@@ -160,6 +172,9 @@ void BLEOTAClass::CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16
       _file_size |= data[2];
       _expected_sector_index = 0;
       _done = false;
+	  if (Update.isRunning()) {
+		Update.abort();
+	  }
       if (Update.begin(_file_size, U_FLASH)) {
         _file_written = 0;
         sendCommandAnswer(pChar, START_OTA, ACK);
@@ -178,6 +193,9 @@ void BLEOTAClass::CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16
       _file_size |= data[2];
       _expected_sector_index = 0;
       _done = false;
+	  if (Update.isRunning()) {
+		Update.abort();
+	  }
       if (Update.begin(_file_size, U_SPIFFS)) {
         _file_written = 0;
         sendCommandAnswer(pChar, START_SPIFFS, ACK);

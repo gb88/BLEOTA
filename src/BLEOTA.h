@@ -42,6 +42,7 @@ public:
   void process(void);
   bool isRunning(void);
   void abort(void);
+  float progress();
   const char* getBLEOTAuuid(void);
 
   void CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16_t len);
