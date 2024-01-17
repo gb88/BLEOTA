@@ -27,7 +27,7 @@
   and the corresponding public key:
     - openssl rsa -in priv_key.pem -pubout > rsa_key.pub
 
-  export the compiled sketch of SPIFFS to get the bin file
+  export the compiled sketch or SPIFFS to get the bin file
     
   sign the file with SHA256 hash with the private key:
     - openssl dgst -sign priv_key.pem -keyform PEM -sha256 -out signature.sign -binary ota.ino.bin
@@ -77,7 +77,7 @@ void setup() {
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new ServerCallbacks());
 
-  // Add OTA Service
+  // Add OTA Service with security
   BLEOTA.begin(pServer, true);
   // Add pub key
   BLEOTA.setKey(pub_key, strlen(pub_key));
