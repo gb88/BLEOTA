@@ -11,6 +11,7 @@ BLEOTA	KEYWORD1
 #######################################
 
 begin			KEYWORD2
+setKey			KEYWORD2
 setModel		KEYWORD2
 setSerialNumber	KEYWORD2
 setFWVersion	KEYWORD2
