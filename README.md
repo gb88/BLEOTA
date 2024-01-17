@@ -79,7 +79,7 @@ ACK_Status:
 
 ## 5. Security
 
-After the creation of BLE server all BLEOTA.begin with the Server pointer 
+After the creation of BLE server call BLEOTA.begin with the Server pointer 
 ```
 // Create the BLE Device
 BLEDevice::init("ESP32");
