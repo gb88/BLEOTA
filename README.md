@@ -103,7 +103,7 @@ const char pub_key[] = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOC
 ```
 with the content of the .pub file
 
-## 5.1 OTA File signature
+### 5.1 OTA File signature
 
 The process for signing the file is:
 
