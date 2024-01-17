@@ -6,6 +6,8 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <Update.h>
+#include "mbedtls/pk.h"
+#include "mbedtls/sha256.h"
 
 
 #define BLE_OTA_SERVICE_UUID "00008018-0000-1000-8000-00805f9b34fb"
@@ -25,6 +27,7 @@
 
 #define ACK 0x0000
 #define NACK 0x0001
+#define SIGN_ERROR 0x0003
 #define CRC_ERROR 0x0001
 #define INDEX_ERROR 0x0002
 
@@ -32,7 +35,8 @@
 class BLEOTAClass {
 public:
   BLEOTAClass();
-  void begin(BLEServer* pServer);
+  void begin(BLEServer* pServer, bool secure = false);
+  bool setKey(const char * key, uint32_t len);
   void setModel(String model);
   void setSerialNumber(String serial_num);
   void setFWVersion(String fw_version);
@@ -61,6 +65,7 @@ private:
   BLECharacteristic* _pManufacturerchar;
 
   bool _done;
+  bool _secure;
   uint8_t _ble_answer[20];
 
   String _model;
@@ -75,6 +80,22 @@ private:
   uint16_t _expected_sector_index;
   uint16_t _block_size;
   uint16_t _block_crc;
+  /* secure */
+  mbedtls_sha256_context _sha256_ctx;
+  mbedtls_pk_context _pk_context;
+  uint8_t _hash[32];
+  const char * _key;
+  uint8_t _signature[256];
+  uint16_t _signature_index;
+  
+  
+  void hashBegin(void);
+  void hashAdd(const void *data, uint32_t len);
+  void hashEnd(void);
+  bool signatureVerify(void);
+  uint16_t getSignatureLen(void);
+  
+  /* BLE answer */
 
   void sendCommandAnswer(BLECharacteristic* pChar, uint16_t command_id, uint16_t status);
   void sendFWAnswer(BLECharacteristic* pChar, uint16_t index, uint16_t status);
