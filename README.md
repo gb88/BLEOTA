@@ -174,7 +174,7 @@ BLEOTA.process();
 
 [BLEOTA](https://github.com/gb88/BLEOTA/examples/bleota_secure)
 
-After the creation of BLE server call BLEOTA.begin with the Server pointer and security enabled and set the public key [5-security](#5-security "Goto Security")
+After the creation of BLE server call BLEOTA.begin with the Server pointer and security enabled and set the public key [Security](#5-security "Goto Security")
 ```
 // Create the BLE Device
 BLEDevice::init("ESP32");
