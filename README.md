@@ -22,10 +22,10 @@ the service is not added.
 
 |  Characteristics   | UUID  |  Prop   | description  | Method |
 |  ----  | ----  |  ----  | ----  | ----  |
-|  DIS_MODEL_CHAR | 0x8020 | Read  | Model Number String | setModel |
-|  DIS_SERIAL_N_CHAR  | 0x2A24 | Read  | Serial Number String | setSerialNumber |
-|  DIS_FW_VER_CHAR  | 0x2A25 | Read  | Firmware Revision String | setFWVersion |
-|  DIS_HW_VERSION_CHAR  | 0x2A26 | Read  | Hardware Revision String | setHWVersion |
+|  DIS_MODEL_CHAR | 0x2A24 | Read  | Model Number String | setModel |
+|  DIS_SERIAL_N_CHAR  | 0x2A25 | Read  | Serial Number String | setSerialNumber |
+|  DIS_FW_VER_CHAR  | 0x2A26 | Read  | Firmware Revision String | setFWVersion |
+|  DIS_HW_VERSION_CHAR  | 0x2A27 | Read  | Hardware Revision String | setHWVersion |
 |  DIS_MNF_CHAR | 0x2A29 | Read  | Manufacturer Name String | setManufactuer |
 
 ## 3. OTA Service Characteristics definition
