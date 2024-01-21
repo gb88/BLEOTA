@@ -190,4 +190,5 @@ BLEOTA.setKey(pub_key, strlen(pub_key));
 ``` 
 ## 6. WebApp
 [BLEOTA_WEBAPP](https://gb88.github.io/BLEOTA/)
+
 Small web application that implement the OTA process over BLE with Web Bluetooth
