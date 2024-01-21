@@ -1,0 +1,38 @@
+{
+  "files": {
+    "main.css": "/BLEOTA/static/css/main.bdfb0247.css",
+    "main.js": "/BLEOTA/static/js/main.30bd5442.js",
+    "static/js/738.15fbac76.chunk.js": "/BLEOTA/static/js/738.15fbac76.chunk.js",
+    "static/js/223.0c57dafa.chunk.js": "/BLEOTA/static/js/223.0c57dafa.chunk.js",
+    "static/js/22.f0ada666.chunk.js": "/BLEOTA/static/js/22.f0ada666.chunk.js",
+    "static/js/372.40868419.chunk.js": "/BLEOTA/static/js/372.40868419.chunk.js",
+    "static/js/856.381c4b19.chunk.js": "/BLEOTA/static/js/856.381c4b19.chunk.js",
+    "static/js/272.b1eb83bc.chunk.js": "/BLEOTA/static/js/272.b1eb83bc.chunk.js",
+    "static/js/841.3df8c8d0.chunk.js": "/BLEOTA/static/js/841.3df8c8d0.chunk.js",
+    "static/js/186.0e82f2bb.chunk.js": "/BLEOTA/static/js/186.0e82f2bb.chunk.js",
+    "static/js/573.6791c35b.chunk.js": "/BLEOTA/static/js/573.6791c35b.chunk.js",
+    "static/js/225.6f31b0fa.chunk.js": "/BLEOTA/static/js/225.6f31b0fa.chunk.js",
+    "static/js/665.35fef61a.chunk.js": "/BLEOTA/static/js/665.35fef61a.chunk.js",
+    "static/js/377.42de1614.chunk.js": "/BLEOTA/static/js/377.42de1614.chunk.js",
+    "service-worker.js": "/BLEOTA/service-worker.js",
+    "index.html": "/BLEOTA/index.html",
+    "main.bdfb0247.css.map": "/BLEOTA/static/css/main.bdfb0247.css.map",
+    "main.30bd5442.js.map": "/BLEOTA/static/js/main.30bd5442.js.map",
+    "738.15fbac76.chunk.js.map": "/BLEOTA/static/js/738.15fbac76.chunk.js.map",
+    "223.0c57dafa.chunk.js.map": "/BLEOTA/static/js/223.0c57dafa.chunk.js.map",
+    "22.f0ada666.chunk.js.map": "/BLEOTA/static/js/22.f0ada666.chunk.js.map",
+    "372.40868419.chunk.js.map": "/BLEOTA/static/js/372.40868419.chunk.js.map",
+    "856.381c4b19.chunk.js.map": "/BLEOTA/static/js/856.381c4b19.chunk.js.map",
+    "272.b1eb83bc.chunk.js.map": "/BLEOTA/static/js/272.b1eb83bc.chunk.js.map",
+    "841.3df8c8d0.chunk.js.map": "/BLEOTA/static/js/841.3df8c8d0.chunk.js.map",
+    "186.0e82f2bb.chunk.js.map": "/BLEOTA/static/js/186.0e82f2bb.chunk.js.map",
+    "573.6791c35b.chunk.js.map": "/BLEOTA/static/js/573.6791c35b.chunk.js.map",
+    "225.6f31b0fa.chunk.js.map": "/BLEOTA/static/js/225.6f31b0fa.chunk.js.map",
+    "665.35fef61a.chunk.js.map": "/BLEOTA/static/js/665.35fef61a.chunk.js.map",
+    "377.42de1614.chunk.js.map": "/BLEOTA/static/js/377.42de1614.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.bdfb0247.css",
+    "static/js/main.30bd5442.js"
+  ]
+}
