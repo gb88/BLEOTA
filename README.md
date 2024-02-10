@@ -1,6 +1,6 @@
 # BLEOTA description
 
-Library inspired by https://components.espressif.com/components/espressif/ble_ota that implement the firmware and SPIFFS 
+Library inspired by https://components.espressif.com/components/espressif/ble_ota that implement the firmware and SPIFFS/LittleFS 
 OTA via BLE and writes it to flash, sector by sector, until the upgrade is complete.
 
 ## 1. Services definition
