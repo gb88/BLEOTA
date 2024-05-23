@@ -48,6 +48,8 @@ void BLEOTAClass::begin(BLEServer* pServer, bool secure) {
   _fw_version = "";
   _hw_version = "";
   _manufacturer = "";
+  
+  _pCallbacks = nullptr;
 }
 
 void BLEOTAClass::setModel(String model) {
@@ -189,6 +191,7 @@ void BLEOTAClass::CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16
 			memset(_signature,0,sizeof(_signature));
 		}
         sendCommandAnswer(pChar, START_OTA, ACK);
+		invokeBeforeStartOTACallback();
       } else {
         sendCommandAnswer(pChar, START_OTA, NACK);
       }
@@ -220,6 +223,7 @@ void BLEOTAClass::CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16
         _file_written = 0;
 		_signature_index = 0;
         sendCommandAnswer(pChar, START_SPIFFS, ACK);
+		invokeBeforeStartSPIFFSCallback();
       } else {
         sendCommandAnswer(pChar, START_SPIFFS, NACK);
       }
@@ -235,16 +239,19 @@ void BLEOTAClass::CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16
 		{
 		  Update.abort();
           sendCommandAnswer(pChar, STOP_OTA, SIGN_ERROR);
+		  invokeAfterAbortCallback();
 		  return;
 		}
 	  }
       if (Update.end()) {
         if (Update.isFinished()) {
           sendCommandAnswer(pChar, STOP_OTA, ACK);
+		  invokeAfterStopCallback();
           _done = true;
         } else {
           Update.abort();
           sendCommandAnswer(pChar, STOP_OTA, NACK);
+		  invokeAfterStopCallback();
         }
       }
     }
@@ -432,3 +439,49 @@ uint16_t BLEOTAClass::crc16(uint16_t init, uint8_t* data, uint16_t length) {
   }
   return crc & 0xFFFF;
 }
+
+
+void BLEOTAClass::invokeBeforeStartOTACallback(void) {
+	if (_pCallbacks != nullptr) {
+		_pCallbacks->beforeStartOTA();
+	}
+}
+
+void BLEOTAClass::invokeBeforeStartSPIFFSCallback(void) {
+	if (_pCallbacks != nullptr) {
+		_pCallbacks->beforeStartSPIFFS();
+	}
+}
+
+void BLEOTAClass::invokeAfterStopCallback(void) {
+	if (_pCallbacks != nullptr) {
+		_pCallbacks->afterStop();
+	}
+}
+
+void BLEOTAClass::invokeAfterAbortCallback(void) {
+	if (_pCallbacks != nullptr) {
+		_pCallbacks->afterAbort();
+	}
+}
+
+void BLEOTAClass::setCallbacks(BLEOTACallbacks* cb){
+	_pCallbacks = cb;
+}
+
+//Default Callback Methods
+void BLEOTACallbacks::beforeStartOTA(void) {
+	log_d("BLEOTACallbacks", ">> beforeStartOTA(): Default");
+} // beforeStartOTA
+
+void BLEOTACallbacks::beforeStartSPIFFS(void) {
+	log_d("BLEOTACallbacks", ">> beforeStartSPIFFS(): Default");
+} // beforeStartSPIFFS
+
+void BLEOTACallbacks::afterStop(void) {
+	log_d("BLEOTACallbacks", ">> afterStop(): Default");
+} // afterStop
+
+void BLEOTACallbacks::afterAbort(void) {
+	log_d("BLEOTACallbacks", ">> afterAbort(): Default");
+} // afterAbort

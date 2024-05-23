@@ -31,6 +31,7 @@
 #define CRC_ERROR 0x0001
 #define INDEX_ERROR 0x0002
 
+class BLEOTACallbacks;
 
 class BLEOTAClass {
 public:
@@ -51,6 +52,8 @@ public:
 
   void CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16_t len);
   void FWHandler(BLECharacteristic* pChar, uint8_t* data, uint16_t len);
+  
+  void setCallbacks(BLEOTACallbacks* cb);
 
 private:
   BLEServer* _pServer;
@@ -100,7 +103,43 @@ private:
   void sendCommandAnswer(BLECharacteristic* pChar, uint16_t command_id, uint16_t status);
   void sendFWAnswer(BLECharacteristic* pChar, uint16_t index, uint16_t status);
   uint16_t crc16(uint16_t init, uint8_t* data, uint16_t length);
+  
+  /* Callback methods */
+  BLEOTACallbacks* _pCallbacks = nullptr;
+  void invokeBeforeStartOTACallback(void);
+  void invokeBeforeStartSPIFFSCallback(void);
+  void invokeAfterStopCallback(void);
+  void invokeAfterAbortCallback(void);
 };
+
+class BLEOTACallbacks {
+public:
+	virtual ~BLEOTACallbacks() {};
+	/**
+	 * @brief Called before the OTA Update starts.
+	 *
+	 * This callback method is invoked just before the OTA update begins.
+	 */
+	virtual void beforeStartOTA(void);
+	/**
+	 * @brief Called before the SPIFFS Update starts.
+	 *
+	 * This callback method is invoked just before the SPIFFS update begins.
+	 */
+	virtual void beforeStartSPIFFS(void);
+	/**
+	 * @brief Called after the Update ends.
+	 *
+	 * This callback method is invoked just after the update completes.
+	 */
+	virtual void afterStop(void);
+	/**
+	 * @brief Called after the OTA Update is aborted.
+	 *
+	 * This callback method is invoked just after the OTA update is aborted.
+	 */
+	virtual void afterAbort(void);
+}; // BLEOTACallbacks
 
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_UPDATE)
 extern BLEOTAClass BLEOTA;
