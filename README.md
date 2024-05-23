@@ -1,6 +1,6 @@
 # BLEOTA description
 
-Library inspired by https://components.espressif.com/components/espressif/ble_ota that implement the firmware and SPIFFS 
+Library inspired by https://components.espressif.com/components/espressif/ble_ota that implement the firmware and SPIFFS/LittleFS 
 OTA via BLE and writes it to flash, sector by sector, until the upgrade is complete.
 
 ## 1. Services definition
@@ -125,7 +125,7 @@ use the **ota.bin** to perform the update
 
 ## 6.  Sample code
 
-[BLEOTA](https://github.com/gb88/BLEOTA/examples/bleota)
+[BLEOTA](https://github.com/gb88/BLEOTA/tree/main/examples/bleota)
 
 After the creation of BLE server call BLEOTA.begin with the Server pointer 
 ```
@@ -172,7 +172,7 @@ Add to loop the process function
 BLEOTA.process();
 ```
 
-[BLEOTA](https://github.com/gb88/BLEOTA/examples/bleota_secure)
+[BLEOTA_SECURE](https://github.com/gb88/BLEOTA/tree/main/examples/bleota_secure)
 
 After the creation of BLE server call BLEOTA.begin with the Server pointer and security enabled and set the public key [Security](#5-security "Goto Security")
 ```
@@ -188,6 +188,7 @@ BLEOTA.begin(pServer, true);
 // Add pub key
 BLEOTA.setKey(pub_key, strlen(pub_key));
 ``` 
-## 6. Sample Python
+## 6. WebApp
+[BLEOTA_WEBAPP](https://gb88.github.io/BLEOTA/)
 
-[BLEOTA](https://github.com/gb88/BLEOTA/examples/bleota)
+Small web application that implement the OTA process over BLE with Web Bluetooth

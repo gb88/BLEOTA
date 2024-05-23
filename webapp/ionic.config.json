@@ -1,0 +1,7 @@
+{
+  "name": "esp32bleOTA",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
