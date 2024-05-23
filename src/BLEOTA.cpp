@@ -48,6 +48,12 @@ void BLEOTAClass::begin(BLEServer* pServer, bool secure) {
   _fw_version = "";
   _hw_version = "";
   _manufacturer = "";
+  
+  _pCallbacks = nullptr;
+  _front = 0;
+  _rear = 0;
+  _count = 0;
+  
 }
 
 void BLEOTAClass::setModel(String model) {
@@ -124,11 +130,14 @@ void BLEOTAClass::init(void) {
     _pDISService->start();
 }
 
-void BLEOTAClass::process(void) {
+void BLEOTAClass::process(bool reset) {
+  processCallback();
   if (_done) {
-    //TODO: add callback
-    delay(500);
-    ESP.restart();
+	if(reset)
+	{
+		delay(500);
+		ESP.restart();
+	}
   }
 }
 
@@ -189,6 +198,7 @@ void BLEOTAClass::CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16
 			memset(_signature,0,sizeof(_signature));
 		}
         sendCommandAnswer(pChar, START_OTA, ACK);
+		deferCallback(invokeBeforeStartOTACallback);
       } else {
         sendCommandAnswer(pChar, START_OTA, NACK);
       }
@@ -220,6 +230,7 @@ void BLEOTAClass::CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16
         _file_written = 0;
 		_signature_index = 0;
         sendCommandAnswer(pChar, START_SPIFFS, ACK);
+		deferCallback(invokeBeforeStartSPIFFSCallback);
       } else {
         sendCommandAnswer(pChar, START_SPIFFS, NACK);
       }
@@ -235,16 +246,19 @@ void BLEOTAClass::CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16
 		{
 		  Update.abort();
           sendCommandAnswer(pChar, STOP_OTA, SIGN_ERROR);
+		  deferCallback(invokeAfterAbortCallback);
 		  return;
 		}
 	  }
       if (Update.end()) {
         if (Update.isFinished()) {
           sendCommandAnswer(pChar, STOP_OTA, ACK);
+		  deferCallback(invokeAfterStopCallback);
           _done = true;
         } else {
           Update.abort();
           sendCommandAnswer(pChar, STOP_OTA, NACK);
+		  deferCallback(invokeAfterAbortCallback);
         }
       }
     }
@@ -432,3 +446,57 @@ uint16_t BLEOTAClass::crc16(uint16_t init, uint8_t* data, uint16_t length) {
   }
   return crc & 0xFFFF;
 }
+
+void BLEOTAClass::invokeBeforeStartOTACallback(BLEOTACallbacks* p) {
+	if (p != nullptr) {
+		p->beforeStartOTA();
+	}
+}
+
+void BLEOTAClass::invokeBeforeStartSPIFFSCallback(BLEOTACallbacks* p) {
+	if (p != nullptr) {
+		p->beforeStartSPIFFS();
+	}
+}
+
+void BLEOTAClass::invokeAfterStopCallback(BLEOTACallbacks* p) {
+	if (p != nullptr) {
+		p->afterStop();
+	}
+}
+
+void BLEOTAClass::invokeAfterAbortCallback(BLEOTACallbacks* p) {
+	if (p != nullptr) {
+		p->afterAbort();
+	}
+}
+
+void BLEOTAClass::setCallbacks(BLEOTACallbacks* cb){
+	_pCallbacks = cb;
+}
+
+bool BLEOTAClass::deferCallback(void (*callback)(BLEOTACallbacks* p)) {
+	if (_pCallbacks == nullptr) return false;
+    if (_count == QUEUE_SIZE) {
+        // Queue is full
+        return false;
+    }
+    _callbacks[_rear] = callback;
+    _rear = (_rear + 1) % QUEUE_SIZE;
+    _count++;
+    return true;
+}
+
+// Process all callbacks in the queue
+void BLEOTAClass::processCallback(void) {
+	if (_pCallbacks == nullptr) return;
+	if (_count == 0) return;
+    while (_count > 0) {
+        void (*callback)(BLEOTACallbacks*) = _callbacks[_front];
+        callback(_pCallbacks);
+        _front = (_front + 1) % QUEUE_SIZE;
+        _count--;
+    }
+}
+
+
