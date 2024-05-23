@@ -47,16 +47,16 @@ class ServerCallbacks : public BLEServerCallbacks {
 class OTACallbacks : public BLEOTACallbacks {
 public:
     void beforeStartOTA() {
-        printf("beforeStartOTA called!\n");
+        Serial.println("beforeStartOTA called!\n");
     }
     void beforeStartSPIFFS() {
-        printf("beforeStartSPIFFS called!\n");
+        Serial.println("beforeStartSPIFFS called!\n");
     }
     void afterStop() {
-        printf("afterStop called!\n");
+        Serial.println("afterStop called!\n");
     }
     void afterAbort() {
-        printf("afterAbort called!\n");
+        Serial.println("afterAbort called!\n");
     }
 };
 
