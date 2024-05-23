@@ -187,8 +187,48 @@ pServer->setCallbacks(new ServerCallbacks());
 BLEOTA.begin(pServer, true);
 // Add pub key
 BLEOTA.setKey(pub_key, strlen(pub_key));
-``` 
-## 6. WebApp
+```
+
+## 7.  Callbacks
+Thanks to the contribution of [@drik](https://github.com/drik) a set of callbacks can be added. I choice to defer the execution of the code inside each callback in the **process** method to avoid to break the BLE communication in case of heavy process inside the callbacks. 
+The callbacks can be defined with a new class which inherits from BLEOTACallbacks
+```
+class OTACallbacks : public BLEOTACallbacks {
+public:
+
+    //This callback method is invoked just before the APP OTA update begins.
+    void beforeStartOTA() {
+        Serial.println("beforeStartOTA called!\n");
+    }
+    //This callback method is invoked just before the SPIFFS OTA update begins.
+    void beforeStartSPIFFS() {
+        Serial.println("beforeStartSPIFFS called!\n");
+    }
+    //This callback method is invoked just after the update completes.
+    void afterStop() {
+        Serial.println("afterStop called!\n");
+    }
+    //This callback method is invoked just after the update abort.
+    void afterAbort() {
+        Serial.println("afterAbort called!\n");
+    }
+};
+```
+To set the callbacks just call **setCallbacks** after the begin
+```
+// Begin BLE OTA
+BLEOTA.begin(pServer);
+BLEOTA.setCallbacks(new OTACallbacks());
+```
+Since the **progress** function will reset the ESP32 500ms after the completion of the update is possible that the **afterStop** will no execute correctly, to handle this scenario is possible to disable the automatic reset and handle it some others part of the code.
+```
+//automatic reset
+//BLEOTA.process();
+//to avoid reset after OTA success and manage it in the callback or somewhere else call
+BLEOTA.process(false); 
+```
+
+## 8. WebApp
 [BLEOTA_WEBAPP](https://gb88.github.io/BLEOTA/)
 
 Small web application that implement the OTA process over BLE with Web Bluetooth
