@@ -141,10 +141,11 @@ const Ota: React.FC = () => {
         Buffer.from(sector_data).copy(packet, 3);
         written_size = written_size + sector_data.byteLength;
 		//console.log(written_size);
-        let p_status = Math.round((100 * written_size) / file.byteLength);
-        setProgress(p_status);
-		setUploadSpeed(written_size *1000 / 1024 / (new Date().getTime() - startTime));
+
         if (f_last) {
+	      let p_status = Math.round((100 * written_size) / file.byteLength);
+		  setProgress(p_status);
+		  setUploadSpeed(written_size *1000 / 1024 / (new Date().getTime() - startTime));
           let crc_data = Buffer.alloc(2);
           crc_data[0] = crc & 0xff;
           crc_data[1] = (crc >> 8) & 0xff;
@@ -154,13 +155,14 @@ const Ota: React.FC = () => {
         //setfwStatus(0);
         fwStatus = 0;
         expected_index = index;
-        await BleClient.write(
+		//console.log("Send " + index);
+        await BleClient.writeWithoutResponse(
           deviceId,
           "00008018-0000-1000-8000-00805f9b34fb",
           "00008020-0000-1000-8000-00805f9b34fb",
           numbersToDataView(Array.prototype.slice.call(packet))
         );
-        if (f_last) {
+        if (f_last && fwStatus == 0) {
           const fw_ack = await waitForAnsFw(5000);
           if (!fw_ack) {
 			setBarStatus("danger");
@@ -185,19 +187,23 @@ const Ota: React.FC = () => {
         let fw_ans = value.getUint16(2, true);
         if (fw_ans == 0 && expected_index == value.getUint16(0, true)) {
           fwStatus = 1;
+		 // console.log("OK");
         } else if (fw_ans == 1 && expected_index == value.getUint16(0, true)) {
           fwStatus = 0;
 		  setStatus("CRC Error");
+		  console.log("CRC Error");
           //TODO: crc error
         } else if (fw_ans == 2) {
           //&& (expected_index == value.getUint16(0,true))???
           fwStatus = 0;
 		  setStatus("Index Error");
+		  console.log("Index Error");
           //TODO: sector index
           // bytes(4 ~ 5) indicates the desired Sector_Index
         } else if (fw_ans == 3 && expected_index == value.getUint16(0, true)) {
           fwStatus = 0;
 		  setStatus("Payload length Error");
+		  console.log("Payload length Error");
           //TODO: Payload length error
         }
         //setfwStatus(1);
@@ -402,8 +408,7 @@ const Ota: React.FC = () => {
 
       const checkCondition = () => {
         // Replace the condition below with your actual condition
-        if (fwStatus === ACK) {
-        //  console.log("ack");
+        if (fwStatus == 1) {
           if (intervalId !== null) {
             clearInterval(intervalId);
             intervalId = null;
@@ -418,7 +423,7 @@ const Ota: React.FC = () => {
       setTimeout(() => {
         if (intervalId !== null) {
           clearInterval(intervalId);
-          console.log("timeout1");
+          console.log("timeout2");
           resolve(false);
         }
       }, timeout);
