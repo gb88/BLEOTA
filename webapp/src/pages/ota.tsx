@@ -33,7 +33,7 @@ import { Buffer } from "buffer";
 import { bstr, buf, str } from "crc-32";
 import ProgressBar from "@ramonak/react-progress-bar";
 import "./ota.css";
-var version = "Version 0.02";
+var version = "Version 0.03";
 var CRC32 = require("crc-32");
 var ACK = 1;
 var clientDevice: any;

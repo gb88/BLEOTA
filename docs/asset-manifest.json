@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/BLEOTA/static/css/main.bdfb0247.css",
-    "main.js": "/BLEOTA/static/js/main.297d9520.js",
+    "main.js": "/BLEOTA/static/js/main.6df5aac6.js",
     "static/js/738.15fbac76.chunk.js": "/BLEOTA/static/js/738.15fbac76.chunk.js",
     "static/js/223.0c57dafa.chunk.js": "/BLEOTA/static/js/223.0c57dafa.chunk.js",
     "static/js/22.f0ada666.chunk.js": "/BLEOTA/static/js/22.f0ada666.chunk.js",
@@ -17,7 +17,7 @@
     "service-worker.js": "/BLEOTA/service-worker.js",
     "index.html": "/BLEOTA/index.html",
     "main.bdfb0247.css.map": "/BLEOTA/static/css/main.bdfb0247.css.map",
-    "main.297d9520.js.map": "/BLEOTA/static/js/main.297d9520.js.map",
+    "main.6df5aac6.js.map": "/BLEOTA/static/js/main.6df5aac6.js.map",
     "738.15fbac76.chunk.js.map": "/BLEOTA/static/js/738.15fbac76.chunk.js.map",
     "223.0c57dafa.chunk.js.map": "/BLEOTA/static/js/223.0c57dafa.chunk.js.map",
     "22.f0ada666.chunk.js.map": "/BLEOTA/static/js/22.f0ada666.chunk.js.map",
@@ -33,6 +33,6 @@
   },
   "entrypoints": [
     "static/css/main.bdfb0247.css",
-    "static/js/main.297d9520.js"
+    "static/js/main.6df5aac6.js"
   ]
 }
