@@ -41,6 +41,7 @@ void BLEOTAClass::begin(BLEServer* pServer, bool secure) {
   _pManufacturerchar = NULL;
 
   _done = false;
+  _mode_z = false;
   _secure = secure;
 
   _model = "";
@@ -142,11 +143,11 @@ void BLEOTAClass::process(bool reset) {
 }
 
 bool BLEOTAClass::isRunning(void) {
-  return Update.isRunning();
+  return FlashZ::getInstance().isRunning();
 }
 void BLEOTAClass::abort(void) {
   _done = false;
-  Update.abort();
+  FlashZ::getInstance().abortz();
 }
 
 float BLEOTAClass::progress(void) {
@@ -186,22 +187,20 @@ void BLEOTAClass::CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16
 	  }
       _expected_sector_index = 0;
       _done = false;
-	  if (Update.isRunning()) {
-		Update.abort();
+	  _type = U_FLASH;
+	  if (FlashZ::getInstance().isRunning()) {
+		FlashZ::getInstance().abortz();
 	  }
-      if (Update.begin(_file_size, U_FLASH)) {
-        _file_written = 0;
-		_signature_index = 0;
-		if(_secure)
-		{
-			hashBegin();
-			memset(_signature,0,sizeof(_signature));
-		}
-        sendCommandAnswer(pChar, START_OTA, ACK);
-		deferCallback(invokeBeforeStartOTACallback);
-      } else {
-        sendCommandAnswer(pChar, START_OTA, NACK);
-      }
+	  _mode_z = false;
+	  _file_written = 0;
+	  _signature_index = 0;
+	  if(_secure)
+	  {
+		hashBegin();
+		memset(_signature,0,sizeof(_signature));
+	  }
+	  sendCommandAnswer(pChar, START_OTA, ACK);
+	  deferCallback(invokeBeforeStartOTACallback);
     }
     if ((data[0] == 0x04) && (data[1] == 0x00))  //start command
     {
@@ -218,22 +217,20 @@ void BLEOTAClass::CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16
 	  }
       _expected_sector_index = 0;
       _done = false;
-	  if (Update.isRunning()) {
-		Update.abort();
+	  if (FlashZ::getInstance().isRunning()) {
+		FlashZ::getInstance().abortz();
 	  }
-      if (Update.begin(_file_size, U_SPIFFS)) {
-		if(_secure)
-		{
+	  _type = U_SPIFFS;
+      _mode_z = false;
+	  if(_secure)
+	  {
 			hashBegin();
 			memset(_signature,0,sizeof(_signature));
-		}
-        _file_written = 0;
-		_signature_index = 0;
-        sendCommandAnswer(pChar, START_SPIFFS, ACK);
-		deferCallback(invokeBeforeStartSPIFFSCallback);
-      } else {
-        sendCommandAnswer(pChar, START_SPIFFS, NACK);
-      }
+	  }
+      _file_written = 0;
+	  _signature_index = 0;
+      sendCommandAnswer(pChar, START_SPIFFS, ACK);
+      deferCallback(invokeBeforeStartSPIFFSCallback);
     } else if ((data[0] == 0x02) && (data[1] == 0x00))  //stop command
     {
       if (_file_written != _file_size) {
@@ -244,19 +241,19 @@ void BLEOTAClass::CommandHandler(BLECharacteristic* pChar, uint8_t* data, uint16
 	    hashEnd();
 		if(signatureVerify())
 		{
-		  Update.abort();
+		  FlashZ::getInstance().abortz();
           sendCommandAnswer(pChar, STOP_OTA, SIGN_ERROR);
 		  deferCallback(invokeAfterAbortCallback);
 		  return;
 		}
 	  }
-      if (Update.end()) {
-        if (Update.isFinished()) {
+      if (FlashZ::getInstance().endz()) {
+        if (FlashZ::getInstance().isFinished()) {
           sendCommandAnswer(pChar, STOP_OTA, ACK);
 		  deferCallback(invokeAfterStopCallback);
           _done = true;
         } else {
-          Update.abort();
+          FlashZ::getInstance().abortz();
           sendCommandAnswer(pChar, STOP_OTA, NACK);
 		  deferCallback(invokeAfterAbortCallback);
         }
@@ -280,6 +277,16 @@ void BLEOTAClass::FWHandler(BLECharacteristic* pChar, uint8_t* data, uint16_t le
       _block_crc = 0;
     }
     if ((_block_size + size) <= sizeof(_block)) {
+	  if((_block_size == 0) && (_file_written == 0))
+	  {
+	    _mode_z = (data[3] == ZLIB_HEADER);    // check if we have a compressed image 
+	    if (!(_mode_z ? FlashZ::getInstance().beginz(UPDATE_SIZE_UNKNOWN, _type) : FlashZ::getInstance().begin(UPDATE_SIZE_UNKNOWN, _type)))
+		{
+         FlashZ::getInstance().abortz();
+		 sendFWAnswer(pChar, sector_index, START_ERROR);
+		 return;
+        }
+	  }
       memcpy(&_block[_block_size], &data[3], size);
     }
     _block_crc = crc16(_block_crc, &data[3], size);
@@ -291,7 +298,10 @@ void BLEOTAClass::FWHandler(BLECharacteristic* pChar, uint8_t* data, uint16_t le
       if (_block_crc == recv_crc) {
 		if((_file_written+_block_size) <= _file_size)
 		{
-			if (Update.write(_block, _block_size) == _block_size) {
+			bool _final = false;
+			if((_file_written+_block_size) == _file_size)
+				_final = true;
+			if (FlashZ::getInstance().writez(_block, _block_size, _final) == _block_size) {
 				if(_secure)
 					hashAdd(_block,_block_size);
 			  _file_written += _block_size;
@@ -317,7 +327,7 @@ void BLEOTAClass::FWHandler(BLECharacteristic* pChar, uint8_t* data, uint16_t le
 			{
 				uint32_t to_write = _file_size - _file_written;
 				//only part of the block is signature
-				if (Update.write(_block, to_write) == to_write) {
+				if (FlashZ::getInstance().writez(_block, to_write, true) == to_write) {
 				  if(_secure)
 				   hashAdd(_block,to_write);
 				  _file_written += to_write;

@@ -5,7 +5,7 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
-#include <Update.h>
+#include "flashz.hpp"
 #include "mbedtls/pk.h"
 #include "mbedtls/sha256.h"
 
@@ -30,6 +30,7 @@
 #define SIGN_ERROR 0x0003
 #define CRC_ERROR 0x0001
 #define INDEX_ERROR 0x0002
+#define START_ERROR 0x0005
 
 #define QUEUE_SIZE	8
 
@@ -99,7 +100,9 @@ private:
 
   bool _done;
   bool _secure;
+  bool _mode_z;
   uint8_t _ble_answer[20];
+  int _type;
 
   String _model;
   String _serial_num;
