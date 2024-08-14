@@ -35,7 +35,7 @@ bool oldDeviceConnected = false;
 class ServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* pServer, esp_ble_gatts_cb_param_t* param) {
     deviceConnected = true;
-    pServer->updateConnParams(param->connect.remote_bda, 0, 0x20, 0x10, 2000);
+    pServer->updateConnParams(param->connect.remote_bda, 0x06, 0x12, 0, 2000);
   };
 
   void onDisconnect(BLEServer* pServer) {
