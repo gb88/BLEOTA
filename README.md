@@ -75,9 +75,24 @@ ACK_Status:
 - 0x0000: Success
 - 0x0001: CRC error
 - 0x0002: Sector_Index error, bytes(4 ~ 5) indicates the desired Sector_Index
-- 0x0003： Payload length error
+- 0x0003：Payload length error
+- 0x0005：Can't start OTA
 
-## 5. Security
+## 5. Compression
+
+To speed up the OTA process the .bin file for the update can be compressed using zlib, the decompression code is based on the work of 
+[https://github.com/vortigont/esp32-flashz](https://github.com/vortigont/esp32-flashz) where you can find more details.
+
+With compression the time is reduced by approximately 30% for FLASH and much more for SPIFFS.
+
+The compression must be done before eventually sign the file, you can use the [https://github.com/madler/pigz].(https://github.com/madler/pigz). tool
+- compress the file
+```
+pigz -9kzc file.ino.bin > file.compressed.bin
+```
+- use the **file.compressed.bin** to perform the update or to create the signed file
+
+## 6. Security
 
 After the creation of BLE server call BLEOTA.begin with the Server pointer 
 ```
@@ -103,7 +118,7 @@ const char pub_key[] = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOC
 ```
 with the content of the .pub file
 
-### 5.1 OTA File signature
+### 6.1 OTA File signature
 
 The process for signing the file is:
 
@@ -112,7 +127,7 @@ The process for signing the file is:
 openssl genrsa -out priv_key.pem 2048
 openssl rsa -in priv_key.pem -pubout > rsa_key.pub
 ```
-- export the compiled sketch or SPIFFS to get the bin file and create the digest of the file with SHA256 hash with the private key:
+- export the compiled sketch or SPIFFS to get the bin file, eventually compress it, and create the digest of the file with SHA256 hash with the private key:
 ```
 openssl dgst -sign priv_key.pem -keyform PEM -sha256 -out signature.sign -binary file.ino.bin
 ```
@@ -123,7 +138,7 @@ cat file.ino.bin signature.sign > ota.bin
 	
 use the **ota.bin** to perform the update
 
-## 6.  Sample code
+## 7.  Sample code
 
 [BLEOTA](https://github.com/gb88/BLEOTA/tree/main/examples/bleota)
 
@@ -189,7 +204,7 @@ BLEOTA.begin(pServer, true);
 BLEOTA.setKey(pub_key, strlen(pub_key));
 ```
 
-## 7.  Callbacks
+## 8.  Callbacks
 Thanks to the contribution of [@drik](https://github.com/drik) a set of callbacks can be added. I choice to defer the execution of the code inside each callback in the **process** method to avoid to break the BLE communication in case of heavy process inside the callbacks. 
 The callbacks can be defined with a new class which inherits from BLEOTACallbacks
 ```
@@ -228,7 +243,7 @@ Since the **progress** function will reset the ESP32 500ms after the completion 
 BLEOTA.process(false); 
 ```
 
-## 8. WebApp
+## 9. WebApp
 [BLEOTA_WEBAPP](https://gb88.github.io/BLEOTA/)
 
 Small web application that implement the OTA process over BLE with Web Bluetooth
