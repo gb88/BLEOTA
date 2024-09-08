@@ -34,8 +34,8 @@ The `OTA Service` can contains 2 characteristics to perform the OTA process.
 
 |  Characteristics   | UUID  |  Prop   | description  |
 |  ----  | ----  |  ----  | ----  |
-|  RECV_FW_CHAR | 00008020-0000-1000-8000-00805f9b34fb | Write, Notify  | Firmware received, send ACK |
-|  COMMAND_CHAR  | 00008022-0000-1000-8000-00805f9b34fb | Write, Notify  | Send the command and ACK |
+|  RECV_FW_CHAR | 00008020-0000-1000-8000-00805f9b34fb | Write, WriteNR, Notify  | Firmware received, send ACK |
+|  COMMAND_CHAR  | 00008022-0000-1000-8000-00805f9b34fb | Write, WriteNR, Notify  | Send the command and ACK |
 
 
 ## 4. OTA Service data transmission details
