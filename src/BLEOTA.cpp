@@ -84,12 +84,12 @@ void BLEOTAClass::init(void) {
   // Create a BLE Characteristic
   _pRecvFWchar = _pBLEOTAService->createCharacteristic(
     RECV_FW_UUID,
-    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
+    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR |BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
   _pRecvFWchar->setCallbacks(new recvFWCallback());
 
   _pCommandchar = _pBLEOTAService->createCharacteristic(
     COMMAND_UUID,
-    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
+    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
 
   _pCommandchar->setCallbacks(new commandCallback());
 
