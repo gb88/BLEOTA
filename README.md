@@ -3,6 +3,12 @@
 Library inspired by https://components.espressif.com/components/espressif/ble_ota that implement the firmware and SPIFFS/LittleFS 
 OTA via BLE and writes it to flash, sector by sector, until the upgrade is complete.
 
+The version 1.2.0 is still compatible with the older code just create the object
+```
+BLEOTAClass BLEOTA;
+```
+at the beginning of the code. The librare has been extended to support [Nimble stack](#9--NimBLE) 
+
 ## 1. Services definition
 
 The library add two services:
@@ -242,8 +248,16 @@ Since the **progress** function will reset the ESP32 500ms after the completion 
 //to avoid reset after OTA success and manage it in the callback or somewhere else call
 BLEOTA.process(false); 
 ```
+## 9. NimBLE
+In the version 1.2.0 the support of Nimble has been added, the use of NIMBLE reduce the the flash usage of **46%**. To use the Nimble version my fork of the library [NimBLE-Arduino](https://github.com/gb88/NimBLE-Arduino) must be used.  
+```
+//include the NimBLEOTA version
+#include "NimBLEOTA.h"
+//create the NimBLEOTA object 
+NimBLEOTAClass BLEOTA;
+```
 
-## 9. WebApp
+## 10. WebApp
 [BLEOTA_WEBAPP](https://gb88.github.io/BLEOTA/)
 
 Small web application that implement the OTA process over BLE with Web Bluetooth
