@@ -1,9 +1,9 @@
 #include "BLEOTA.h"
-
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_UPDATE)
 BLEOTAClass BLEOTA;
 #endif
 
+#ifndef BLEOTA_NIMBLE
 class recvFWCallback : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic* pCharacteristic) {
     uint8_t* data;
@@ -23,6 +23,27 @@ class commandCallback : public BLECharacteristicCallbacks {
     }
   }
 };
+#else	
+/****************************************INIZIO***************************************************/
+class recvFWCallback : public NimBLECharacteristicCallbacks {
+  void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
+    if (pCharacteristic->getValue().length() >= 4) {
+      NimBLEAttValue data = pCharacteristic->getValue();
+      BLEOTA.FWHandler(pCharacteristic, (uint8_t*)data.c_str(), pCharacteristic->getValue().length());
+    }
+  }
+};
+
+class commandCallback : public NimBLECharacteristicCallbacks {
+  void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
+    if (pCharacteristic->getValue().length() >= 20) {
+      NimBLEAttValue data = pCharacteristic->getValue();
+      BLEOTA.CommandHandler(pCharacteristic, (uint8_t*)data.c_str(), pCharacteristic->getValue().length());
+    }
+  }
+};
+/*********************************************************************************************/
+#endif
 
 BLEOTAClass::BLEOTAClass() {
 }
@@ -77,6 +98,7 @@ void BLEOTAClass::setManufactuer(String manufacturer) {
   _manufacturer = manufacturer;
 }
 
+#ifndef BLEOTA_NIMBLE
 void BLEOTAClass::init(void) {
   // Create the OTA Service
   _pBLEOTAService = _pServer->createService(BLE_OTA_SERVICE_UUID);
@@ -130,6 +152,62 @@ void BLEOTAClass::init(void) {
   if ((_model != "") || (_serial_num != "") || (_fw_version != "") || (_hw_version != "") || (_manufacturer != ""))
     _pDISService->start();
 }
+#else
+void BLEOTAClass::init(void) {
+  // Create the OTA Service
+  _pBLEOTAService = _pServer->createService(BLE_OTA_SERVICE_UUID);
+  
+  // Create a BLE Characteristic
+  _pRecvFWchar = _pBLEOTAService->createCharacteristic(
+    RECV_FW_UUID,
+    NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::INDICATE);
+  _pRecvFWchar->setCallbacks(new recvFWCallback());
+
+  _pCommandchar = _pBLEOTAService->createCharacteristic(
+    COMMAND_UUID,
+    NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::INDICATE);
+
+  _pCommandchar->setCallbacks(new commandCallback());
+
+  // Create a BLE Descriptor
+  // _pRecvFWchar->addDescriptor(new BLE2902());
+  // _pCommandchar->addDescriptor(new BLE2902());
+
+  // Create the DIS Service
+  if ((_model != "") || (_serial_num != "") || (_fw_version != "") || (_hw_version != "") || (_manufacturer != ""))
+    _pDISService = _pServer->createService(DIS_SERVICE_UUID);
+
+  if (_model != "") {
+    _pModelchar = _pDISService->createCharacteristic(DIS_MODEL_CHAR_UUID, NIMBLE_PROPERTY::READ);
+    _pModelchar->setValue(_model.c_str());
+  }
+
+  if (_serial_num != "") {
+    _pSerialNumchar = _pDISService->createCharacteristic(DIS_SERIAL_N_CHAR_UUID, NIMBLE_PROPERTY::READ);
+    _pSerialNumchar->setValue(_serial_num.c_str());
+  }
+
+  if (_fw_version != "") {
+    _pFWVerchar = _pDISService->createCharacteristic(DIS_FW_VER_CHAR_UUID, NIMBLE_PROPERTY::READ);
+    _pFWVerchar->setValue(_fw_version.c_str());
+  }
+
+  if (_hw_version != "") {
+    _pHWVerchar = _pDISService->createCharacteristic(DIS_HW_VERSION_CHAR_UUID, NIMBLE_PROPERTY::READ);
+    _pHWVerchar->setValue(_hw_version.c_str());
+  }
+
+  if (_manufacturer != "") {
+    _pManufacturerchar = _pDISService->createCharacteristic(DIS_MNF_CHAR_UUID, NIMBLE_PROPERTY::READ);
+    _pManufacturerchar->setValue(_manufacturer.c_str());
+  }
+  _pBLEOTAService->start();
+
+  if ((_model != "") || (_serial_num != "") || (_fw_version != "") || (_hw_version != "") || (_manufacturer != ""))
+    _pDISService->start();
+}
+/******************************************************************************************/
+#endif
 
 void BLEOTAClass::process(bool reset) {
   processCallback();
