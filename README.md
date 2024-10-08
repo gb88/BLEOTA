@@ -249,7 +249,7 @@ Since the **progress** function will reset the ESP32 500ms after the completion 
 BLEOTA.process(false); 
 ```
 ## 9. NimBLE
-In the version 1.2.0 the support of Nimble has been added, the use of NIMBLE reduce the the flash usage of **46%**. To use the Nimble version my fork of the library [NimBLE-Arduino](https://github.com/gb88/NimBLE-Arduino) must be used.  
+In the version 1.2.0 the support of Nimble has been added, this reduce the flash usage of **46%**. To use the Nimble version this library must be installed [NimBLE-Arduino](https://github.com/gb88/NimBLE-Arduino)  
 ```
 //include the NimBLEOTA version
 #include "NimBLEOTA.h"
