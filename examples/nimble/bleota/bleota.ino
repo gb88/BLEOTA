@@ -19,13 +19,15 @@
 */
 
 #include <BLEServer.h>
-#include "BLEOTA.h"
+#include "NimBLEOTA.h"
 
 #define MODEL "1"
 #define SERIAL_NUM "1234"
 #define FW_VERSION "1.0.0"
 #define HW_VERSION "1"
 #define MANUFACTURER "Espressif"
+
+NimBLEOTAClass BLEOTA;
 
 BLEServer* pServer = NULL;
 

@@ -1,43 +1,42 @@
-#include "BLEOTA.h"
-
-class recvFWCallback : public BLECharacteristicCallbacks {
+#include "NimBLEOTA.h"
+ 
+class NimBLErecvFWCallback : public NimBLECharacteristicCallbacks {
   public:
-  BLEOTAClass * _ota = NULL;
-  recvFWCallback(BLEOTAClass * ota)
+  NimBLEOTAClass * _ota = NULL;
+  NimBLErecvFWCallback(NimBLEOTAClass * ota)
   {
 	  _ota = ota;
   }
   private:
-  void onWrite(BLECharacteristic* pCharacteristic) {
-    uint8_t* data;
-    if (pCharacteristic->getLength() >= 4) {
-      data = pCharacteristic->getData();
-      _ota->FWHandler(data, pCharacteristic->getLength());
+  void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
+    if (pCharacteristic->getValue().length() >= 4) {
+      NimBLEAttValue data = pCharacteristic->getValue();
+      _ota->FWHandler((uint8_t*)data.c_str(), pCharacteristic->getValue().length());
     }
   }
 };
 
-class commandCallback : public BLECharacteristicCallbacks {
+class NimBLEcommandCallback : public NimBLECharacteristicCallbacks {
   public:
-  BLEOTAClass * _ota = NULL;
-  commandCallback(BLEOTAClass * ota)
+  NimBLEOTAClass * _ota = NULL;
+  NimBLEcommandCallback(NimBLEOTAClass * ota)
   {
 	  _ota = ota;
   }
   private:
-  void onWrite(BLECharacteristic* pCharacteristic) {
-    uint8_t* data;
-    if (pCharacteristic->getLength() >= 20) {
-      data = pCharacteristic->getData();
-      _ota->CommandHandler(data, pCharacteristic->getLength());
+  void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
+    if (pCharacteristic->getValue().length() >= 20) {
+      NimBLEAttValue data = pCharacteristic->getValue();
+      _ota->CommandHandler((uint8_t*)data.c_str(), pCharacteristic->getValue().length());
     }
   }
 };
 
-BLEOTAClass::BLEOTAClass() {
+NimBLEOTAClass::NimBLEOTAClass() {
 }
 
-void BLEOTAClass::begin(BLEServer* pServer, bool secure) {
+
+void NimBLEOTAClass::begin(BLEServer* pServer, bool secure) {
   _pServer = pServer;
   _pBLEOTAService = NULL;
   _pRecvFWchar = NULL;
@@ -67,52 +66,52 @@ void BLEOTAClass::begin(BLEServer* pServer, bool secure) {
   
 }
 
-void BLEOTAClass::init(void) {
+void NimBLEOTAClass::init(void) {
   // Create the OTA Service
   _pBLEOTAService = _pServer->createService(BLE_OTA_SERVICE_UUID);
-
+  
   // Create a BLE Characteristic
   _pRecvFWchar = _pBLEOTAService->createCharacteristic(
     RECV_FW_UUID,
-    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
-  _pRecvFWchar->setCallbacks(new recvFWCallback(this));
+    NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::INDICATE);
+  _pRecvFWchar->setCallbacks(new NimBLErecvFWCallback(this));
 
   _pCommandchar = _pBLEOTAService->createCharacteristic(
     COMMAND_UUID,
-    BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_INDICATE);
+    NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::INDICATE);
 
-  _pCommandchar->setCallbacks(new commandCallback(this));
+  _pCommandchar->setCallbacks(new NimBLEcommandCallback(this));
 
   // Create a BLE Descriptor
-  _pRecvFWchar->addDescriptor(new BLE2902());
-  _pCommandchar->addDescriptor(new BLE2902());
+  // _pRecvFWchar->addDescriptor(new BLE2902());
+  // _pCommandchar->addDescriptor(new BLE2902());
 
   // Create the DIS Service
   if ((_model != "") || (_serial_num != "") || (_fw_version != "") || (_hw_version != "") || (_manufacturer != ""))
     _pDISService = _pServer->createService(DIS_SERVICE_UUID);
 
   if (_model != "") {
-    _pModelchar = _pDISService->createCharacteristic(DIS_MODEL_CHAR_UUID, BLECharacteristic::PROPERTY_READ);
+    _pModelchar = _pDISService->createCharacteristic(DIS_MODEL_CHAR_UUID, NIMBLE_PROPERTY::READ);
     _pModelchar->setValue(_model.c_str());
   }
 
   if (_serial_num != "") {
-    _pSerialNumchar = _pDISService->createCharacteristic(DIS_SERIAL_N_CHAR_UUID, BLECharacteristic::PROPERTY_READ);
+    _pSerialNumchar = _pDISService->createCharacteristic(DIS_SERIAL_N_CHAR_UUID, NIMBLE_PROPERTY::READ);
     _pSerialNumchar->setValue(_serial_num.c_str());
   }
 
   if (_fw_version != "") {
-    _pFWVerchar = _pDISService->createCharacteristic(DIS_FW_VER_CHAR_UUID, BLECharacteristic::PROPERTY_READ);
+    _pFWVerchar = _pDISService->createCharacteristic(DIS_FW_VER_CHAR_UUID, NIMBLE_PROPERTY::READ);
     _pFWVerchar->setValue(_fw_version.c_str());
   }
 
   if (_hw_version != "") {
-    _pHWVerchar = _pDISService->createCharacteristic(DIS_HW_VERSION_CHAR_UUID, BLECharacteristic::PROPERTY_READ);
+    _pHWVerchar = _pDISService->createCharacteristic(DIS_HW_VERSION_CHAR_UUID, NIMBLE_PROPERTY::READ);
     _pHWVerchar->setValue(_hw_version.c_str());
   }
 
   if (_manufacturer != "") {
-    _pManufacturerchar = _pDISService->createCharacteristic(DIS_MNF_CHAR_UUID, BLECharacteristic::PROPERTY_READ);
+    _pManufacturerchar = _pDISService->createCharacteristic(DIS_MNF_CHAR_UUID, NIMBLE_PROPERTY::READ);
     _pManufacturerchar->setValue(_manufacturer.c_str());
   }
   _pBLEOTAService->start();
@@ -121,7 +120,8 @@ void BLEOTAClass::init(void) {
     _pDISService->start();
 }
 
-void BLEOTAClass::sendCommandAnswer(uint16_t command_id, uint16_t status) {
+
+void NimBLEOTAClass::sendCommandAnswer(uint16_t command_id, uint16_t status) {
 
   memset(_ble_answer, 0, sizeof(_ble_answer));
   _ble_answer[0] = 0x03;
@@ -138,7 +138,7 @@ void BLEOTAClass::sendCommandAnswer(uint16_t command_id, uint16_t status) {
   _pCommandchar->notify();
 }
 
-void BLEOTAClass::sendFWAnswer(uint16_t index, uint16_t status) {
+void NimBLEOTAClass::sendFWAnswer(uint16_t index, uint16_t status) {
 
   memset(_ble_answer, 0, sizeof(_ble_answer));
   _ble_answer[0] = (index & 0xFF);
@@ -152,4 +152,3 @@ void BLEOTAClass::sendFWAnswer(uint16_t index, uint16_t status) {
   _pRecvFWchar->indicate();
   _pRecvFWchar->notify();
 }
-
