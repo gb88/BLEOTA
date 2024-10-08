@@ -7,7 +7,7 @@ The version 1.2.0 is still compatible with the older code just create the object
 ```
 BLEOTAClass BLEOTA;
 ```
-at the beginning of the code. The librare has been extended to support [Nimble stack](#9-nimble).
+at the beginning of the code. The library has been extended to support [Nimble stack](#9-nimble).
 
 ## 1. Services definition
 
