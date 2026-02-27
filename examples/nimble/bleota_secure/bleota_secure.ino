@@ -39,7 +39,6 @@
 
 */
 
-#include <BLEServer.h>
 #include "NimBLEOTA.h"
 
 #define MODEL "1"

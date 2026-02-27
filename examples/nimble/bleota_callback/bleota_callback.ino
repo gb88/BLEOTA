@@ -19,7 +19,6 @@
   7. Process the update
 */
 
-#include <BLEServer.h>
 #include "NimBLEOTA.h"
 
 #define MODEL "1"
