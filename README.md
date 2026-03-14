@@ -243,7 +243,10 @@ Since the **progress** function will reset the ESP32 500ms after the completion 
 BLEOTA.process(false); 
 ```
 
-## 9. WebApp
+## 9. NimBLE
+Nimble port can be found here [BLEOTANimble](https://github.com/gb88/BLEOTANimble/)
+
+## 10. WebApp
 [BLEOTA_WEBAPP](https://gb88.github.io/BLEOTA/)
 
 Web application that implement the OTA process over BLE with Web Bluetooth
