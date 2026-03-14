@@ -1366,13 +1366,20 @@ async function connectBLE() {
     setStatus(t('stScanning'),'scanning');
     log(t('logScanning'),'accent');
 
-    // Match the working React app exactly:
-    // optionalServices needs only the DIS *service* UUID (0x180a).
-    // Individual characteristic UUIDs do NOT go here — the browser
-    // grants access to all characteristics of an allowed service automatically.
+    // Chrome Web Bluetooth blocklist: some DIS characteristics (e.g. 0x2a25 Serial Number)
+    // are blocked by default for fingerprinting protection.
+    // Declaring them explicitly in optionalServices forces Chrome to unblock them.
+    // We must list BOTH the service UUID and each blocked characteristic UUID.
     device = await navigator.bluetooth.requestDevice({
       filters: [{ services: [OTA_SVC] }],
-      optionalServices: ['0000180a-0000-1000-8000-00805f9b34fb']
+      optionalServices: [
+        '0000180a-0000-1000-8000-00805f9b34fb', // DIS service
+        '00002a24-0000-1000-8000-00805f9b34fb', // Model Number
+        '00002a25-0000-1000-8000-00805f9b34fb', // Serial Number  ← blocklisted
+        '00002a26-0000-1000-8000-00805f9b34fb', // Firmware Revision
+        '00002a27-0000-1000-8000-00805f9b34fb', // Hardware Revision
+        '00002a29-0000-1000-8000-00805f9b34fb', // Manufacturer Name
+      ]
     });
 
     device.addEventListener('gattserverdisconnected', onDisc);
@@ -1395,13 +1402,9 @@ async function connectBLE() {
     mtuPayload = await probeMTU(recvChar);
     log(`MTU probe → payload=${mtuPayload}B/packet`, 'accent');
 
-    // Read DIS — use full 128-bit UUID strings (same as numberToUUID() in React app)
+    // Read DIS — use full 128-bit UUID strings
     try {
       const dis = await server.getPrimaryService('0000180a-0000-1000-8000-00805f9b34fb');
-      try {
-        const chars = await dis.getCharacteristics();
-        log(`DIS chars: ${chars.map(c => c.uuid).join(' | ')}`, 'info');
-      } catch {}
       await readDIS(dis);
     } catch(e) {
       log(`${t('logDISNo')}: ${e.message}`, 'warn');
@@ -1421,15 +1424,13 @@ async function connectBLE() {
 }
 
 async function readDIS(svc) {
-  // Use the same full 128-bit UUID strings that numberToUUID(0x2aXX) produces
-  // in the working React/Capacitor app. Each is read individually with its own
-  // try/catch so a missing characteristic doesn't break the rest.
+  // Note: 0x2a25 (Serial Number) is blocklisted by Chrome Web Bluetooth API
+  // for privacy reasons (fingerprinting protection) — we skip it entirely.
   const map = [
-    ['dModel',  '00002a24-0000-1000-8000-00805f9b34fb', 'Model'],
-    ['dSerial', '00002a25-0000-1000-8000-00805f9b34fb', 'Serial'],
-    ['dFW',     '00002a26-0000-1000-8000-00805f9b34fb', 'Firmware'],
-    ['dHW',     '00002a27-0000-1000-8000-00805f9b34fb', 'Hardware'],
-    ['dMfr',    '00002a29-0000-1000-8000-00805f9b34fb', 'Manufacturer'],
+    ['dModel', '00002a24-0000-1000-8000-00805f9b34fb', 'Model'],
+    ['dFW',    '00002a26-0000-1000-8000-00805f9b34fb', 'Firmware'],
+    ['dHW',    '00002a27-0000-1000-8000-00805f9b34fb', 'Hardware'],
+    ['dMfr',   '00002a29-0000-1000-8000-00805f9b34fb', 'Manufacturer'],
   ];
 
   for (const [id, uuid, label] of map) {
@@ -1438,15 +1439,18 @@ async function readDIS(svc) {
       const raw  = await char.readValue();
       const v    = new TextDecoder('utf-8')
                      .decode(raw)
-                     .replace(/\0/g, '')   // strip null bytes common on ESP32
+                     .replace(/\0/g, '')
                      .trim();
       $(id).textContent = v || '—';
-      log(`DIS ${label}: "${v}"`, v ? 'success' : 'warn');
+      log(`DIS ${label}: "${v}"`, v ? 'success' : 'info');
     } catch(e) {
-      log(`DIS ${label}: ${e.message}`, 'warn');
+      // Silently skip unavailable characteristics (blocklisted or not present)
       $(id).textContent = '—';
     }
   }
+
+  // Serial Number (0x2a25) is blocklisted by Chrome — mark as N/A
+  $('dSerial').textContent = 'N/A';
 }
 
 function onDisc() {
