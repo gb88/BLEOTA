@@ -246,4 +246,4 @@ BLEOTA.process(false);
 ## 9. WebApp
 [BLEOTA_WEBAPP](https://gb88.github.io/BLEOTA/)
 
-Small web application that implement the OTA process over BLE with Web Bluetooth
+Web application that implement the OTA process over BLE with Web Bluetooth
