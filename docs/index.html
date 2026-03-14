@@ -1,1 +1,1940 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><title>ESP32bleOTA</title><base href="/"/><meta name="color-scheme" content="light dark"/><meta name="viewport" content="viewport-fit=cover,width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/><meta name="format-detection" content="telephone=no"/><meta name="msapplication-tap-highlight" content="no"/><link rel="manifest" href="/BLEOTA/manifest.json"/><link rel="shortcut icon" type="image/png" href="/BLEOTA/assets/icon/favicon.png"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="Ionic App"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><script defer="defer" src="/BLEOTA/static/js/main.6df5aac6.js"></script><link href="/BLEOTA/static/css/main.bdfb0247.css" rel="stylesheet"></head><body><div id="root"></div></body></html>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 BLE OTA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ── Tokens: Light (default) ── */
+  :root {
+    --bg:        #f5f7fa;
+    --surface:   #ffffff;
+    --surface2:  #f0f2f5;
+    --border:    #dde2ea;
+    --border2:   #c8d0dc;
+    --blue:      #2563eb;
+    --blue-dark: #1d4ed8;
+    --blue-light:#eff6ff;
+    --blue-muted:#bfdbfe;
+    --green:     #16a34a;
+    --green-bg:  #f0fdf4;
+    --green-bd:  #bbf7d0;
+    --red:       #dc2626;
+    --red-bg:    #fef2f2;
+    --red-bd:    #fecaca;
+    --orange:    #d97706;
+    --orange-bg: #fffbeb;
+    --orange-bd: #fde68a;
+    --text:      #111827;
+    --text2:     #374151;
+    --text3:     #6b7280;
+    --text4:     #9ca3af;
+    --log-bg:    #f8f9fb;
+    --mono:      'IBM Plex Mono', monospace;
+    --sans:      'IBM Plex Sans', sans-serif;
+    --radius:    8px;
+    --radius-lg: 12px;
+    --shadow:    0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --transition: background .2s, border-color .2s, color .2s;
+  }
+
+  /* ── Tokens: Dark ── */
+  [data-theme="dark"] {
+    --bg:        #0f1117;
+    --surface:   #181c27;
+    --surface2:  #1e2435;
+    --border:    #2a3145;
+    --border2:   #374160;
+    --blue:      #3b82f6;
+    --blue-dark: #2563eb;
+    --blue-light:#1e3a5f;
+    --blue-muted:#1e40af;
+    --green:     #22c55e;
+    --green-bg:  #052e16;
+    --green-bd:  #14532d;
+    --red:       #f87171;
+    --red-bg:    #2d0d0d;
+    --red-bd:    #7f1d1d;
+    --orange:    #fbbf24;
+    --orange-bg: #271a00;
+    --orange-bd: #78350f;
+    --text:      #f1f5f9;
+    --text2:     #cbd5e1;
+    --text3:     #94a3b8;
+    --text4:     #64748b;
+    --log-bg:    #0a0d14;
+    --shadow:    0 1px 4px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    transition: var(--transition);
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 56px;
+  }
+
+  /* ── Responsive layout grid ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .col-left  { display: flex; flex-direction: column; gap: 12px; }
+  .col-right { display: flex; flex-direction: column; gap: 12px; }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .header-icon {
+    width: 40px; height: 40px;
+    background: var(--blue);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background .2s;
+  }
+  .header-icon svg { width: 22px; height: 22px; fill: white; }
+
+  .header-title { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -.01em; }
+  .header-sub   { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; }
+
+  .header-controls {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── Icon button (theme / lang) ── */
+  .icon-btn {
+    width: 32px; height: 32px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text3);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, border-color .15s, color .15s;
+    flex-shrink: 0;
+  }
+  .icon-btn:hover { background: var(--surface2); color: var(--text2); border-color: var(--border2); }
+  .icon-btn svg { width: 15px; height: 15px; }
+
+  /* ── Lang dropdown ── */
+  .lang-wrap { position: relative; }
+
+  .lang-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    min-width: 130px;
+    z-index: 100;
+    overflow: hidden;
+  }
+  .lang-menu.open { display: block; }
+
+  .lang-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    transition: background .12s;
+    white-space: nowrap;
+  }
+  .lang-item:hover { background: var(--surface2); }
+  .lang-item.active { color: var(--blue); font-weight: 600; }
+  .lang-flag { font-size: 14px; line-height: 1; }
+  .lang-current { font-size: 11px; font-weight: 600; font-family: var(--mono); }
+
+  /* ── Status pill ── */
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-family: var(--mono);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    width: 100%;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    transition: background .2s, border-color .2s, color .2s;
+    flex-wrap: wrap;
+  }
+
+  /* Error state: red tinted pill so the message stands out */
+  .status-pill.has-error {
+    background: var(--red-bg);
+    border-color: var(--red-bd);
+  }
+  .status-pill.has-error .status-text {
+    color: var(--red);
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border2);
+    flex-shrink: 0;
+    transition: background .2s;
+  }
+  .dot.scanning  { background: var(--orange); animation: blink .8s infinite; }
+  .dot.connected { background: var(--green); }
+  .dot.uploading { background: var(--blue);  animation: blink .5s infinite; }
+  .dot.error     { background: var(--red); }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .status-text { flex: 1; color: var(--text2); }
+  .status-time { color: var(--text4); font-size: 11px; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+  }
+
+  .card-label {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .06em;
+    color: var(--text3);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .card-label svg { width: 13px; height: 13px; }
+
+  /* ── Device grid ── */
+  .dev-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .dev-cell {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    transition: var(--transition);
+  }
+  .dev-cell-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--text4); margin-bottom: 2px; }
+  .dev-cell-value { font-family: var(--mono); font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dev-cell-value.name { color: var(--blue); font-weight: 500; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, opacity .15s;
+    white-space: nowrap; user-select: none;
+  }
+  .btn:disabled { opacity: .4; pointer-events: none; }
+  .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  .btn-primary { background: var(--blue); color: white; border-color: var(--blue); }
+  .btn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
+
+  .btn-ghost { background: transparent; color: var(--text2); border-color: var(--border); }
+  .btn-ghost:hover { background: var(--surface2); border-color: var(--border2); }
+
+  .btn-danger { background: transparent; color: var(--red); border-color: var(--red-bd); }
+  .btn-danger:hover { background: var(--red-bg); }
+
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ── Segment ── */
+  .seg {
+    display: flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 3px; gap: 3px;
+    margin-bottom: 16px;
+    transition: var(--transition);
+  }
+  .seg-btn {
+    flex: 1; padding: 7px 12px;
+    border: none; border-radius: 5px;
+    background: transparent; color: var(--text3);
+    font-family: var(--sans); font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all .15s;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .seg-btn svg { width: 13px; height: 13px; }
+  .seg-btn.active { background: var(--surface); color: var(--blue); box-shadow: 0 1px 3px rgba(0,0,0,.12); font-weight: 600; }
+
+  /* ── Drop zone ── */
+  .dropzone {
+    border: 2px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 28px 20px; text-align: center;
+    cursor: pointer; position: relative; background: var(--bg);
+    transition: border-color .15s, background .15s;
+  }
+  .dropzone:hover, .dropzone.over { border-color: var(--blue); background: var(--blue-light); }
+  .dropzone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .dz-icon { margin-bottom: 8px; color: var(--text4); }
+  .dz-icon svg { width: 28px; height: 28px; }
+  .dz-title { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 2px; }
+  .dz-sub   { font-size: 11px; color: var(--text4); font-family: var(--mono); }
+
+  /* ── File badge ── */
+  .file-badge {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--green-bg); border: 1px solid var(--green-bd);
+    border-radius: var(--radius); margin-top: 10px;
+    transition: var(--transition);
+  }
+  .file-badge svg { width: 15px; height: 15px; color: var(--green); flex-shrink: 0; }
+  .file-badge-name { font-family: var(--mono); font-size: 12px; color: var(--green); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-badge-size { font-family: var(--mono); font-size: 11px; color: var(--text4); white-space: nowrap; }
+
+  /* ── Alert ── */
+  .alert { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius); font-size: 12px; line-height: 1.5; margin-bottom: 12px; }
+  .alert svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+  .alert-warn  { background: var(--orange-bg); border: 1px solid var(--orange-bd); color: var(--orange); }
+  .alert-error { background: var(--red-bg);    border: 1px solid var(--red-bd);    color: var(--red); }
+
+  .alert-body { display: flex; flex-direction: column; gap: 4px; }
+  .alert-title { font-weight: 600; font-size: 12px; }
+  .alert-desc  { font-size: 11.5px; opacity: .85; line-height: 1.5; }
+  .alert-desc a { color: inherit; font-weight: 600; }
+  .alert-desc code {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    background: rgba(0,0,0,.08);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+  [data-theme="dark"] .alert-desc code { background: rgba(255,255,255,.1); }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+  /* ── Progress ── */
+  .prog-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .prog-label  { font-size: 12px; font-weight: 500; color: var(--text2); }
+  .prog-pct    { font-family: var(--mono); font-size: 12px; color: var(--blue); font-weight: 500; }
+
+  .prog-track { height: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+  .prog-fill  { height: 100%; background: var(--blue); border-radius: 999px; transition: width .3s ease; position: relative; overflow: hidden; }
+  .prog-fill::after { content:''; position:absolute; inset:0; background: linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent); animation: shim 1.4s infinite; }
+  @keyframes shim { from{transform:translateX(-100%)} to{transform:translateX(200%)} }
+
+  .prog-stats { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; gap: 1px; }
+  .stat-k { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--text4); font-weight: 600; }
+  .stat-v { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+
+  /* ── Success ── */
+  .success-box { display:none; flex-direction:column; align-items:center; padding:24px 16px; text-align:center; }
+  .success-box.show { display:flex; }
+  .success-ring { width:52px; height:52px; border-radius:50%; border:2px solid var(--green); background:var(--green-bg); display:flex; align-items:center; justify-content:center; margin-bottom:12px; animation:pop .35s cubic-bezier(.34,1.56,.64,1); }
+  .success-ring svg { width:24px; height:24px; color:var(--green); }
+  @keyframes pop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+  .success-title { font-size:15px; font-weight:600; color:var(--green); margin-bottom:3px; }
+  .success-sub   { font-size:12px; color:var(--text3); }
+
+  /* ── Log ── */
+  .log-wrap {
+    background: var(--log-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    height: 220px;
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 12px;
+    font-family: var(--mono); font-size: 11.5px; line-height: 1.7;
+    transition: background .2s, border-color .2s;
+    /* Never let flex or grid stretch this box */
+    flex-shrink: 0;
+    flex-grow: 0;
+  }
+  .log-wrap::-webkit-scrollbar { width: 4px; }
+  .log-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* ── Log toggle switch ── */
+  .log-toggle-btn {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background .15s;
+  }
+  .log-toggle-btn:hover { background: var(--surface2); }
+
+  .log-toggle-track {
+    position: relative;
+    width: 28px; height: 16px;
+    background: var(--border2);
+    border-radius: 999px;
+    transition: background .2s;
+    flex-shrink: 0;
+  }
+  .log-toggle-track.on { background: var(--blue); }
+
+  .log-toggle-thumb {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 12px; height: 12px;
+    background: white;
+    border-radius: 50%;
+    transition: transform .2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,.2);
+  }
+  .log-toggle-track.on .log-toggle-thumb { transform: translateX(12px); }
+
+  .log-toggle-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text4);
+    font-family: var(--mono);
+    white-space: nowrap;
+  }
+  .log-toggle-track.on + .log-toggle-label { color: var(--blue); }
+
+  /* ── Log disabled overlay ── */
+  .log-disabled {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 32px 16px;
+    color: var(--text4);
+    font-size: 12px;
+    text-align: center;
+    height: 220px;
+    flex-shrink: 0;
+  }
+  .log-disabled svg { width: 28px; height: 28px; opacity: .4; }
+  .log-disabled.hidden { display: none !important; }
+
+  .le { display:flex; gap:8px; }
+  .lt { color: var(--text4); flex-shrink: 0; }
+  .lm.info    { color: var(--text3); }
+  .lm.accent  { color: var(--blue); }
+  .lm.success { color: var(--green); }
+  .lm.error   { color: var(--red); }
+  .lm.warn    { color: var(--orange); }
+
+  footer { text-align:center; margin-top:32px; font-size:11px; color:var(--text4); font-family:var(--mono); }
+  footer a { color:var(--blue); text-decoration:none; }
+
+  .hidden { display:none !important; }
+
+  /* ════ BREAKPOINTS ════ */
+
+  /* ── Mobile: ≤ 639px ── */
+  @media (max-width:639px) {
+
+    /* Base font bigger on mobile */
+    body { font-size: 16px; }
+
+    .page { padding: 16px 14px 56px; }
+
+    /* Header */
+    .header { flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .header-icon { width: 44px; height: 44px; }
+    .header-icon svg { width: 24px; height: 24px; }
+    .header-title { font-size: 20px; }
+    .header-sub   { font-size: 12px; }
+    .header-controls { margin-left: auto; }
+
+    /* Status pill */
+    .status-pill { font-size: 13px; padding: 8px 14px; border-radius: 12px; margin-bottom: 16px; }
+    .dot { width: 9px; height: 9px; }
+
+    /* Cards */
+    .card { padding: 18px 16px; border-radius: 14px; margin-bottom: 14px; }
+    .card-label { font-size: 13px; margin-bottom: 16px; }
+    .card-label svg { width: 15px; height: 15px; }
+
+    /* Device grid: 2 colonne */
+    .dev-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+    .dev-cell { padding: 12px 14px; border-radius: 10px; }
+    .dev-cell-label { font-size: 11px; margin-bottom: 3px; }
+    .dev-cell-value { font-size: 14px; }
+
+    /* Buttons — grandi e touch-friendly */
+    .btn { padding: 13px 20px; font-size: 15px; border-radius: 10px; }
+    .btn svg { width: 18px; height: 18px; }
+    .btn-row { flex-direction: column; gap: 10px; }
+    .btn-row .btn { width: 100%; justify-content: center; }
+
+    /* Icon buttons (theme/lang) */
+    .icon-btn { width: 40px; height: 40px; border-radius: 10px; }
+    .icon-btn svg { width: 18px; height: 18px; }
+    .lang-current { font-size: 12px; }
+
+    /* Segment */
+    .seg { gap: 4px; padding: 4px; }
+    .seg-btn { font-size: 14px; padding: 10px 14px; border-radius: 8px; }
+    .seg-btn svg { width: 16px; height: 16px; }
+
+    /* Drop zone */
+    .dropzone { padding: 28px 20px; border-radius: 12px; }
+    .dz-icon svg { width: 36px; height: 36px; }
+    .dz-title { font-size: 15px; }
+    .dz-sub   { font-size: 13px; }
+
+    /* File badge */
+    .file-badge { padding: 14px 16px; border-radius: 10px; margin-top: 12px; }
+    .file-badge svg { width: 20px; height: 20px; }
+    .file-badge-name { font-size: 14px; }
+    .file-badge-size { font-size: 13px; }
+
+    /* Progress */
+    .prog-header { margin-bottom: 10px; }
+    .prog-label  { font-size: 14px; }
+    .prog-pct    { font-size: 14px; }
+    .prog-track  { height: 8px; }
+    .prog-stats  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .stat-k { font-size: 11px; }
+    .stat-v { font-size: 14px; }
+
+    /* Success */
+    .success-ring { width: 64px; height: 64px; }
+    .success-ring svg { width: 32px; height: 32px; }
+    .success-title { font-size: 17px; }
+    .success-sub   { font-size: 14px; }
+
+    /* Log */
+    .log-wrap      { height: 200px; font-size: 12.5px; line-height: 1.8; }
+    .log-disabled  { height: 200px; font-size: 14px; }
+    .log-toggle-label { font-size: 12px; }
+    .log-toggle-track { width: 34px; height: 20px; }
+    .log-toggle-thumb { width: 16px; height: 16px; }
+    .log-toggle-track.on .log-toggle-thumb { transform: translateX(14px); }
+
+    /* Alerts */
+    .alert { font-size: 13px; padding: 14px 16px; border-radius: 10px; }
+    .alert-title { font-size: 14px; }
+    .alert-desc  { font-size: 13px; }
+
+    /* HR */
+    hr { margin: 18px 0; }
+  }
+
+  /* ── Very small phones: ≤ 380px ── */
+  @media (max-width:380px) {
+    body { font-size: 15px; }
+    .header-sub { display: none; }
+    .dev-grid   { grid-template-columns: 1fr; }
+    .page       { padding: 14px 12px 48px; }
+  }
+
+  /* ── Tablet: 640–1023px ── */
+  @media (min-width:640px) and (max-width:1023px) {
+    body { font-size: 15px; }
+    .page { padding: 24px 24px 64px; }
+    .dev-grid { grid-template-columns: repeat(3, 1fr); }
+    .log-wrap     { height: 240px; }
+    .log-disabled { height: 240px; }
+    .card { padding: 22px; }
+    .btn  { padding: 11px 20px; font-size: 14px; }
+  }
+
+  /* Desktop: 1024px+ — two-column layout, heights managed by JS syncLogHeight() */
+  @media (min-width:1024px) {
+    .page { padding: 36px 40px 72px; }
+    .layout {
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .col-left  { gap: 16px; }
+    .col-right { display: flex; flex-direction: column; overflow: hidden; }
+    .col-right .card {
+      display: flex; flex-direction: column;
+      overflow: hidden; box-sizing: border-box;
+    }
+    .col-right .log-wrap     { flex-shrink: 0; }
+    .col-right .log-disabled { flex-shrink: 0; }
+    .dev-grid { grid-template-columns: 1fr 1fr; }
+    .header-title { font-size: 20px; }
+  }
+
+  /* Wide: 1280px+ */
+  @media (min-width:1280px) {
+    .page { padding: 40px 48px 80px; }
+    .layout { gap: 20px; }
+    .card { padding: 28px; }
+  }
+
+  /* Ultra-wide: 1440px+ */
+  @media (min-width:1440px) {
+    .layout { grid-template-columns: 5fr 4fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><path d="M14.5 2.5L10 7l4.5 4.5L10 16l1.5 1.5 6-6-6-6zM7 2.5L2.5 7 7 11.5 2.5 16 4 17.5l6-6-6-6z"/></svg>
+    </div>
+    <div>
+      <div class="header-title">ESP32 BLE OTA</div>
+      <div class="header-sub" data-i18n="subtitle">Firmware updater · Web Bluetooth</div>
+    </div>
+    <div class="header-controls">
+      <!-- Theme toggle -->
+      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <!-- Language dropdown -->
+      <div class="lang-wrap">
+        <button class="icon-btn" id="langBtn" onclick="toggleLangMenu()" style="width:auto;padding:0 8px;gap:4px;min-width:52px">
+          <span class="lang-flag" id="langFlag">🇮🇹</span>
+          <span class="lang-current" id="langCode">IT</span>
+        </button>
+        <div class="lang-menu" id="langMenu">
+          <div class="lang-item" onclick="setLang('it')"><span class="lang-flag">🇮🇹</span> Italiano</div>
+          <div class="lang-item" onclick="setLang('en')"><span class="lang-flag">🇬🇧</span> English</div>
+          <div class="lang-item" onclick="setLang('de')"><span class="lang-flag">🇩🇪</span> Deutsch</div>
+          <div class="lang-item" onclick="setLang('fr')"><span class="lang-flag">🇫🇷</span> Français</div>
+          <div class="lang-item" onclick="setLang('es')"><span class="lang-flag">🇪🇸</span> Español</div>
+          <div class="lang-item" onclick="setLang('zh')"><span class="lang-flag">🇨🇳</span> 中文</div>
+          <div class="lang-item" onclick="setLang('ru')"><span class="lang-flag">🇷🇺</span> Русский</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HTTP (no secure context) alert -->
+  <div class="alert alert-error hidden" id="httpAlert">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:2px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div class="alert-body">
+      <div class="alert-title" data-i18n="httpTitle"></div>
+      <div class="alert-desc" id="httpDesc"></div>
+    </div>
+  </div>
+
+  <!-- Browser doesn't support Web Bluetooth at all -->
+  <div class="alert alert-warn hidden" id="noBleAlert">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div class="alert-body">
+      <div class="alert-title" data-i18n="noBTTitle"></div>
+      <div class="alert-desc" data-i18n="noBTDesc"></div>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="status-pill">
+    <span class="dot" id="dot"></span>
+    <span class="status-text" id="stText"></span>
+    <span class="status-time" id="stTime"></span>
+  </div>
+
+  <!-- Responsive two-column grid -->
+  <div class="layout">
+
+    <!-- LEFT: Device + OTA -->
+    <div class="col-left" id="colLeft">
+
+      <!-- Device card -->
+      <div class="card">
+        <div class="card-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L8.5 5.5 12 9l3.5-3.5L12 2z"/><path d="M12 15l-3.5 3.5L12 22l3.5-3.5L12 15z"/><path d="M12 9v6"/></svg>
+          <span data-i18n="deviceLabel"></span>
+        </div>
+        <div class="dev-grid hidden" id="devGrid">
+          <div class="dev-cell"><div class="dev-cell-label" data-i18n="devName"></div><div class="dev-cell-value name" id="dName">—</div></div>
+          <div class="dev-cell"><div class="dev-cell-label" data-i18n="devModel"></div><div class="dev-cell-value" id="dModel">—</div></div>
+          <div class="dev-cell"><div class="dev-cell-label" data-i18n="devFW"></div><div class="dev-cell-value" id="dFW">—</div></div>
+          <div class="dev-cell"><div class="dev-cell-label" data-i18n="devHW"></div><div class="dev-cell-value" id="dHW">—</div></div>
+          <div class="dev-cell"><div class="dev-cell-label" data-i18n="devMfr"></div><div class="dev-cell-value" id="dMfr">—</div></div>
+          <div class="dev-cell"><div class="dev-cell-label" data-i18n="devSerial"></div><div class="dev-cell-value" id="dSerial">—</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnConnect" onclick="connectBLE()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L8.5 5.5 12 9l3.5-3.5L12 2z"/><path d="M12 15l-3.5 3.5L12 22l3.5-3.5L12 15z"/><path d="M12 9v6"/></svg>
+            <span data-i18n="connect"></span>
+          </button>
+          <button class="btn btn-danger hidden" id="btnDisconnect" onclick="disconnectBLE()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span data-i18n="disconnect"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- OTA card -->
+      <div class="card">
+        <div class="card-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          <span data-i18n="otaLabel"></span>
+        </div>
+        <div class="seg">
+          <button class="seg-btn active" id="btnFlash" onclick="setOtaType('flash')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
+            <span data-i18n="otaFlash"></span>
+          </button>
+          <button class="seg-btn" id="btnSpiffs" onclick="setOtaType('spiffs')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span data-i18n="otaSpiffs"></span>
+          </button>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept=".bin" onchange="onFilePick(event)">
+          <div class="dz-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></div>
+          <div class="dz-title" data-i18n="dropTitle"></div>
+          <div class="dz-sub"   data-i18n="dropSub"></div>
+        </div>
+
+        <div class="file-badge hidden" id="fileBadge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="file-badge-name" id="fileName">—</span>
+          <span class="file-badge-size" id="fileSize">—</span>
+        </div>
+
+        <hr>
+
+        <div id="progSection" class="hidden">
+          <div class="prog-header">
+            <span class="prog-label" id="progLabel"></span>
+            <span class="prog-pct"   id="progPct">0%</span>
+          </div>
+          <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+          <div class="prog-stats">
+            <div class="stat"><span class="stat-k" data-i18n="statSent"></span><span class="stat-v" id="sSent">0 B</span></div>
+            <div class="stat"><span class="stat-k" data-i18n="statTotal"></span><span class="stat-v" id="sTotal">0 B</span></div>
+            <div class="stat"><span class="stat-k" data-i18n="statSector"></span><span class="stat-v" id="sSector">0</span></div>
+            <div class="stat"><span class="stat-k" data-i18n="statSpeed"></span><span class="stat-v" id="sSpeed">—</span></div>
+            <div class="stat"><span class="stat-k" data-i18n="statETA"></span><span class="stat-v" id="sETA">—</span></div>
+          </div>
+        </div>
+
+        <div class="success-box" id="successBox">
+          <div class="success-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="success-title" data-i18n="successTitle"></div>
+          <div class="success-sub"   data-i18n="successSub"></div>
+        </div>
+
+        <div class="btn-row" style="margin-top:4px">
+          <button class="btn btn-primary" id="btnStart" onclick="startOTA()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span data-i18n="startOTA"></span>
+          </button>
+          <button class="btn btn-danger hidden" id="btnAbort" onclick="abortOTA()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            <span data-i18n="abort"></span>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /col-left -->
+
+    <!-- RIGHT: Log -->
+    <div class="col-right" id="colRight">
+      <div class="card" id="logCard">
+        <div class="card-label" style="margin-bottom:10px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span data-i18n="logLabel"></span>
+          <!-- Enable/disable toggle -->
+          <button class="log-toggle-btn" id="logToggleBtn" onclick="toggleLog()" title="">
+            <span class="log-toggle-track" id="logToggleTrack">
+              <span class="log-toggle-thumb" id="logToggleThumb"></span>
+            </span>
+            <span class="log-toggle-label" id="logToggleLabel" data-i18n="logEnable"></span>
+          </button>
+          <button class="btn btn-ghost" id="logClearBtn" style="padding:3px 10px;font-size:11px" onclick="clearLog()" data-i18n="clearLog"></button>
+        </div>
+        <!-- Disabled overlay -->
+        <div class="log-disabled" id="logDisabled">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span data-i18n="logDisabledMsg"></span>
+        </div>
+        <div class="log-wrap" id="logEl"></div>
+      </div>
+    </div><!-- /col-right -->
+
+  </div><!-- /layout -->
+
+  <footer>
+    <a href="https://github.com/gb88/BLEOTA" target="_blank">gb88/BLEOTA</a> — ESP32 BLE OTA Library
+  </footer>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+// i18n
+// ════════════════════════════════════════════════
+const LANGS = {
+  it: {
+    flag:'🇮🇹', code:'IT',
+    subtitle: 'Aggiornamento firmware · Web Bluetooth',
+    noBT: 'Web Bluetooth non supportato. Usa Chrome o Edge su desktop/Android.',
+    deviceLabel: 'Dispositivo BLE',
+    devName: 'Nome', devModel: 'Modello', devFW: 'Firmware',
+    devHW: 'Hardware', devMfr: 'Produttore', devSerial: 'Seriale',
+    connect: 'Connetti', disconnect: 'Disconnetti',
+    httpTitle: 'Connessione non sicura (HTTP)',
+    httpDesc: 'Web Bluetooth richiede <strong>HTTPS</strong>. Apri questa pagina tramite <code>https://</code> oppure servila da <code>localhost</code>.',
+    noBTTitle: 'Web Bluetooth non supportato',
+    noBTDesc: 'Usa Chrome o Edge su desktop o Android. Safari e Firefox non supportano Web Bluetooth.',
+    otaLabel: 'Aggiornamento OTA',
+    otaFlash: 'Firmware', otaSpiffs: 'SPIFFS / LittleFS',
+    dropTitle: 'Trascina il file .bin qui',
+    dropSub: 'oppure clicca per selezionare',
+    startOTA: 'Avvia aggiornamento', abort: 'Interrompi',
+    statSent: 'Inviato', statTotal: 'Totale', statSector: 'Settore',
+    statSpeed: 'Velocità', statETA: 'Rimasto',
+    successTitle: 'Aggiornamento completato',
+    successSub: 'Il dispositivo si sta riavviando…',
+    logLabel: 'Log', clearLog: 'Pulisci',
+    logEnable: 'Log', logDisabledMsg: 'Log disabilitato',
+    // dynamic
+    stDisconnected: 'Disconnesso',
+    stScanning: 'Scansione…',
+    stConnecting: 'Connessione…',
+    stConnected: 'Connesso',
+    stUploading: 'Aggiornamento in corso…',
+    stCompleted: 'Completato',
+    stAborted: 'Interrotto',
+    stError: 'Errore',
+    stConnFailed: 'Connessione fallita',
+    progTransferring: 'Trasferimento in corso…',
+    progDone: 'Completato',
+    logBTReady: 'Web Bluetooth API pronta',
+    logBTNo: 'Web Bluetooth non disponibile',
+    logScanning: 'Avvio scansione BLE…',
+    logFound: 'Connesso a',
+    logDISNo: 'DIS service non presente',
+    logDisconn: 'Dispositivo disconnesso',
+    logDisconnMan: 'Disconnesso manualmente',
+    logOtaType: 'Tipo OTA',
+    logFileInvalid: 'File non valido (serve .bin)',
+    logCmdAck: 'CMD_ACK resp',
+    logStartOTA: 'START',
+    logOtaAccepted: 'OTA accettato, trasferimento…',
+    logSectorOK: 'Settore OK',
+    logOtaDone: 'OTA completato!',
+    errSignature: 'Errore firma: firmware rifiutato dal dispositivo',
+    errNack: 'Comando rifiutato dal dispositivo',
+    errCmdTimeout: 'Timeout risposta comando',
+    errStartFailed: 'Avvio OTA fallito',
+    errStopFailed: 'Verifica firmware fallita',
+    logAbort: 'Interruzione…',
+    logAborted: 'OTA interrotto',
+    logError: 'Errore',
+  },
+  en: {
+    flag:'🇬🇧', code:'EN',
+    subtitle: 'Firmware updater · Web Bluetooth',
+    noBT: 'Web Bluetooth is not supported. Use Chrome or Edge on desktop/Android.',
+    deviceLabel: 'BLE Device',
+    devName: 'Name', devModel: 'Model', devFW: 'Firmware',
+    devHW: 'Hardware', devMfr: 'Manufacturer', devSerial: 'Serial',
+    connect: 'Connect', disconnect: 'Disconnect',
+    httpTitle: 'Insecure connection (HTTP)',
+    httpDesc: 'Web Bluetooth requires <strong>HTTPS</strong>. Open this page via <code>https://</code> or serve it from <code>localhost</code>.',
+    noBTTitle: 'Web Bluetooth not supported',
+    noBTDesc: 'Use Chrome or Edge on desktop or Android. Safari and Firefox do not support Web Bluetooth.',
+    otaLabel: 'OTA Update',
+    otaFlash: 'Firmware', otaSpiffs: 'SPIFFS / LittleFS',
+    dropTitle: 'Drop .bin file here',
+    dropSub: 'or click to select',
+    startOTA: 'Start update', abort: 'Abort',
+    statSent: 'Sent', statTotal: 'Total', statSector: 'Sector',
+    statSpeed: 'Speed', statETA: 'Remaining',
+    successTitle: 'Update complete',
+    successSub: 'Device is rebooting…',
+    logLabel: 'Log', clearLog: 'Clear',
+    logEnable: 'Log', logDisabledMsg: 'Log disabled',
+    stDisconnected: 'Disconnected',
+    stScanning: 'Scanning…',
+    stConnecting: 'Connecting…',
+    stConnected: 'Connected',
+    stUploading: 'Updating…',
+    stCompleted: 'Completed',
+    stAborted: 'Aborted',
+    stError: 'Error',
+    stConnFailed: 'Connection failed',
+    progTransferring: 'Transferring…',
+    progDone: 'Done',
+    logBTReady: 'Web Bluetooth API ready',
+    logBTNo: 'Web Bluetooth not available',
+    logScanning: 'Starting BLE scan…',
+    logFound: 'Connected to',
+    logDISNo: 'DIS service not available',
+    logDisconn: 'Device disconnected',
+    logDisconnMan: 'Manually disconnected',
+    logOtaType: 'OTA type',
+    logFileInvalid: 'Invalid file (need .bin)',
+    logCmdAck: 'CMD_ACK resp',
+    logStartOTA: 'START',
+    logOtaAccepted: 'OTA accepted, transferring…',
+    logSectorOK: 'Sector OK',
+    logOtaDone: 'OTA completed!',
+    errSignature: 'Signature error: firmware rejected by device',
+    errNack: 'Command rejected by device',
+    errCmdTimeout: 'Command response timeout',
+    errStartFailed: 'OTA start failed',
+    errStopFailed: 'Firmware verification failed',
+    logAbort: 'Aborting…',
+    logAborted: 'OTA aborted',
+    logError: 'Error',
+  },
+  de: {
+    flag:'🇩🇪', code:'DE',
+    subtitle: 'Firmware-Updater · Web Bluetooth',
+    noBT: 'Web Bluetooth wird nicht unterstützt. Verwende Chrome oder Edge auf Desktop/Android.',
+    deviceLabel: 'BLE-Gerät',
+    devName: 'Name', devModel: 'Modell', devFW: 'Firmware',
+    devHW: 'Hardware', devMfr: 'Hersteller', devSerial: 'Seriennr.',
+    connect: 'Verbinden', disconnect: 'Trennen',
+    httpTitle: 'Unsichere Verbindung (HTTP)',
+    httpDesc: 'Web Bluetooth erfordert <strong>HTTPS</strong>. Öffne die Seite über <code>https://</code> oder von <code>localhost</code>.',
+    noBTTitle: 'Web Bluetooth nicht unterstützt',
+    noBTDesc: 'Verwende Chrome oder Edge auf Desktop oder Android. Safari und Firefox unterstützen Web Bluetooth nicht.',
+    otaLabel: 'OTA-Update',
+    otaFlash: 'Firmware', otaSpiffs: 'SPIFFS / LittleFS',
+    dropTitle: '.bin-Datei hier ablegen',
+    dropSub: 'oder klicken zum Auswählen',
+    startOTA: 'Update starten', abort: 'Abbrechen',
+    statSent: 'Gesendet', statTotal: 'Gesamt', statSector: 'Sektor',
+    statSpeed: 'Geschw.', statETA: 'Verbleibend',
+    successTitle: 'Update abgeschlossen',
+    successSub: 'Gerät wird neu gestartet…',
+    logLabel: 'Protokoll', clearLog: 'Leeren',
+    logEnable: 'Log', logDisabledMsg: 'Protokoll deaktiviert',
+    stDisconnected: 'Getrennt',
+    stScanning: 'Suche…',
+    stConnecting: 'Verbinde…',
+    stConnected: 'Verbunden',
+    stUploading: 'Aktualisierung…',
+    stCompleted: 'Abgeschlossen',
+    stAborted: 'Abgebrochen',
+    stError: 'Fehler',
+    stConnFailed: 'Verbindung fehlgeschlagen',
+    progTransferring: 'Übertragung läuft…',
+    progDone: 'Fertig',
+    logBTReady: 'Web Bluetooth API bereit',
+    logBTNo: 'Web Bluetooth nicht verfügbar',
+    logScanning: 'BLE-Scan gestartet…',
+    logFound: 'Verbunden mit',
+    logDISNo: 'DIS-Service nicht vorhanden',
+    logDisconn: 'Gerät getrennt',
+    logDisconnMan: 'Manuell getrennt',
+    logOtaType: 'OTA-Typ',
+    logFileInvalid: 'Ungültige Datei (.bin erforderlich)',
+    logCmdAck: 'CMD_ACK resp',
+    logStartOTA: 'START',
+    logOtaAccepted: 'OTA akzeptiert, übertrage…',
+    logSectorOK: 'Sektor OK',
+    logOtaDone: 'OTA abgeschlossen!',
+    errSignature: 'Signaturfehler: Firmware vom Gerät abgelehnt',
+    errNack: 'Befehl vom Gerät abgelehnt',
+    errCmdTimeout: 'Timeout Befehlsantwort',
+    errStartFailed: 'OTA-Start fehlgeschlagen',
+    errStopFailed: 'Firmware-Überprüfung fehlgeschlagen',
+    logAbort: 'Wird abgebrochen…',
+    logAborted: 'OTA abgebrochen',
+    logError: 'Fehler',
+  },
+  fr: {
+    flag:'🇫🇷', code:'FR',
+    subtitle: 'Mise à jour firmware · Web Bluetooth',
+    noBT: 'Web Bluetooth non supporté. Utilisez Chrome ou Edge sur bureau/Android.',
+    deviceLabel: 'Appareil BLE',
+    devName: 'Nom', devModel: 'Modèle', devFW: 'Firmware',
+    devHW: 'Matériel', devMfr: 'Fabricant', devSerial: 'Numéro de série',
+    connect: 'Connecter', disconnect: 'Déconnecter',
+    httpTitle: 'Connexion non sécurisée (HTTP)',
+    httpDesc: 'Web Bluetooth nécessite <strong>HTTPS</strong>. Ouvrez cette page via <code>https://</code> ou depuis <code>localhost</code>.',
+    noBTTitle: 'Web Bluetooth non supporté',
+    noBTDesc: 'Utilisez Chrome ou Edge sur bureau ou Android. Safari et Firefox ne supportent pas Web Bluetooth.',
+    otaLabel: 'Mise à jour OTA',
+    otaFlash: 'Firmware', otaSpiffs: 'SPIFFS / LittleFS',
+    dropTitle: 'Déposez le fichier .bin ici',
+    dropSub: 'ou cliquez pour sélectionner',
+    startOTA: 'Lancer la mise à jour', abort: 'Annuler',
+    statSent: 'Envoyé', statTotal: 'Total', statSector: 'Secteur',
+    statSpeed: 'Vitesse', statETA: 'Restant',
+    successTitle: 'Mise à jour terminée',
+    successSub: "L'appareil redémarre…",
+    logLabel: 'Journal', clearLog: 'Effacer',
+    logEnable: 'Journal', logDisabledMsg: 'Journal désactivé',
+    stDisconnected: 'Déconnecté',
+    stScanning: 'Recherche…',
+    stConnecting: 'Connexion…',
+    stConnected: 'Connecté',
+    stUploading: 'Mise à jour…',
+    stCompleted: 'Terminé',
+    stAborted: 'Annulé',
+    stError: 'Erreur',
+    stConnFailed: 'Connexion échouée',
+    progTransferring: 'Transfert en cours…',
+    progDone: 'Terminé',
+    logBTReady: 'Web Bluetooth API prête',
+    logBTNo: 'Web Bluetooth non disponible',
+    logScanning: 'Démarrage scan BLE…',
+    logFound: 'Connecté à',
+    logDISNo: 'Service DIS non disponible',
+    logDisconn: 'Appareil déconnecté',
+    logDisconnMan: 'Déconnexion manuelle',
+    logOtaType: 'Type OTA',
+    logFileInvalid: 'Fichier invalide (besoin .bin)',
+    logCmdAck: 'CMD_ACK resp',
+    logStartOTA: 'DÉMARRAGE',
+    logOtaAccepted: 'OTA accepté, transfert…',
+    logSectorOK: 'Secteur OK',
+    logOtaDone: 'OTA terminé !',
+    errSignature: 'Erreur de signature : firmware rejeté par le dispositif',
+    errNack: 'Commande rejetée par le dispositif',
+    errCmdTimeout: 'Délai de réponse de commande expiré',
+    errStartFailed: 'Échec du démarrage OTA',
+    errStopFailed: 'Échec de la vérification du firmware',
+    logAbort: 'Annulation…',
+    logAborted: 'OTA annulé',
+    logError: 'Erreur',
+  },
+  es: {
+    flag:'🇪🇸', code:'ES',
+    subtitle: 'Actualizador firmware · Web Bluetooth',
+    noBT: 'Web Bluetooth no está disponible. Usa Chrome o Edge en escritorio/Android.',
+    deviceLabel: 'Dispositivo BLE',
+    devName: 'Nombre', devModel: 'Modelo', devFW: 'Firmware',
+    devHW: 'Hardware', devMfr: 'Fabricante', devSerial: 'N° serie',
+    connect: 'Conectar', disconnect: 'Desconectar',
+    httpTitle: 'Conexión no segura (HTTP)',
+    httpDesc: 'Web Bluetooth requiere <strong>HTTPS</strong>. Abre esta página desde <code>https://</code> o sírvela desde <code>localhost</code>.',
+    noBTTitle: 'Web Bluetooth no soportado',
+    noBTDesc: 'Usa Chrome o Edge en escritorio o Android. Safari y Firefox no admiten Web Bluetooth.',
+    otaLabel: 'Actualización OTA',
+    otaFlash: 'Firmware', otaSpiffs: 'SPIFFS / LittleFS',
+    dropTitle: 'Arrastra el archivo .bin aquí',
+    dropSub: 'o haz clic para seleccionar',
+    startOTA: 'Iniciar actualización', abort: 'Cancelar',
+    statSent: 'Enviado', statTotal: 'Total', statSector: 'Sector',
+    statSpeed: 'Velocidad', statETA: 'Restante',
+    successTitle: 'Actualización completada',
+    successSub: 'El dispositivo está reiniciando…',
+    logLabel: 'Registro', clearLog: 'Limpiar',
+    logEnable: 'Registro', logDisabledMsg: 'Registro desactivado',
+    stDisconnected: 'Desconectado',
+    stScanning: 'Buscando…',
+    stConnecting: 'Conectando…',
+    stConnected: 'Conectado',
+    stUploading: 'Actualizando…',
+    stCompleted: 'Completado',
+    stAborted: 'Cancelado',
+    stError: 'Error',
+    stConnFailed: 'Conexión fallida',
+    progTransferring: 'Transfiriendo…',
+    progDone: 'Listo',
+    logBTReady: 'Web Bluetooth API lista',
+    logBTNo: 'Web Bluetooth no disponible',
+    logScanning: 'Iniciando escaneo BLE…',
+    logFound: 'Conectado a',
+    logDISNo: 'Servicio DIS no disponible',
+    logDisconn: 'Dispositivo desconectado',
+    logDisconnMan: 'Desconectado manualmente',
+    logOtaType: 'Tipo OTA',
+    logFileInvalid: 'Archivo inválido (se requiere .bin)',
+    logCmdAck: 'CMD_ACK resp',
+    logStartOTA: 'INICIO',
+    logOtaAccepted: 'OTA aceptado, transfiriendo…',
+    logSectorOK: 'Sector OK',
+    logOtaDone: '¡OTA completado!',
+    errSignature: 'Error de firma: firmware rechazado por el dispositivo',
+    errNack: 'Comando rechazado por el dispositivo',
+    errCmdTimeout: 'Tiempo de espera de respuesta agotado',
+    errStartFailed: 'Fallo al iniciar OTA',
+    errStopFailed: 'Verificación de firmware fallida',
+    logAbort: 'Cancelando…',
+    logAborted: 'OTA cancelado',
+    logError: 'Error',
+  },
+  zh: {
+    flag:'🇨🇳', code:'中文',
+    subtitle: '固件更新 · Web 蓝牙',
+    noBT: '此浏览器不支持 Web 蓝牙。请在桌面或 Android 上使用 Chrome 或 Edge。',
+    deviceLabel: 'BLE 设备',
+    devName: '名称', devModel: '型号', devFW: '固件版本',
+    devHW: '硬件版本', devMfr: '制造商', devSerial: '序列号',
+    connect: '连接', disconnect: '断开',
+    httpTitle: '不安全的连接 (HTTP)',
+    httpDesc: 'Web 蓝牙需要 <strong>HTTPS</strong>。请通过 <code>https://</code> 访问本页面，或从 <code>localhost</code> 提供服务。',
+    noBTTitle: '不支持 Web 蓝牙',
+    noBTDesc: '请在桌面或 Android 上使用 Chrome 或 Edge。Safari 和 Firefox 不支持 Web 蓝牙。',
+    otaLabel: 'OTA 更新',
+    otaFlash: '固件', otaSpiffs: 'SPIFFS / LittleFS',
+    dropTitle: '将 .bin 文件拖放到此处',
+    dropSub: '或点击选择文件',
+    startOTA: '开始更新', abort: '中止',
+    statSent: '已发送', statTotal: '总计', statSector: '扇区',
+    statSpeed: '速度', statETA: '剩余时间',
+    successTitle: '更新完成',
+    successSub: '设备正在重启…',
+    logLabel: '日志', clearLog: '清空',
+    logEnable: '日志', logDisabledMsg: '日志已禁用',
+    stDisconnected: '已断开',
+    stScanning: '扫描中…',
+    stConnecting: '连接中…',
+    stConnected: '已连接',
+    stUploading: '更新中…',
+    stCompleted: '已完成',
+    stAborted: '已中止',
+    stError: '错误',
+    stConnFailed: '连接失败',
+    progTransferring: '传输中…',
+    progDone: '完成',
+    logBTReady: 'Web 蓝牙 API 就绪',
+    logBTNo: 'Web 蓝牙不可用',
+    logScanning: '正在启动 BLE 扫描…',
+    logFound: '已连接至',
+    logDISNo: 'DIS 服务不可用',
+    logDisconn: '设备已断开',
+    logDisconnMan: '手动断开连接',
+    logOtaType: 'OTA 类型',
+    logFileInvalid: '无效文件（需要 .bin 文件）',
+    logCmdAck: 'CMD_ACK resp',
+    logStartOTA: '开始',
+    logOtaAccepted: 'OTA 已接受，正在传输…',
+    logSectorOK: '扇区 OK',
+    logOtaDone: 'OTA 完成！',
+    errSignature: '签名错误：固件被设备拒绝',
+    errNack: '设备拒绝了命令',
+    errCmdTimeout: '命令响应超时',
+    errStartFailed: 'OTA 启动失败',
+    errStopFailed: '固件验证失败',
+    logAbort: '正在中止…',
+    logAborted: 'OTA 已中止',
+    logError: '错误',
+  },
+  ru: {
+    flag:'🇷🇺', code:'RU',
+    subtitle: 'Обновление прошивки · Web Bluetooth',
+    noBT: 'Web Bluetooth не поддерживается. Используйте Chrome или Edge на ПК/Android.',
+    deviceLabel: 'BLE Устройство',
+    devName: 'Имя', devModel: 'Модель', devFW: 'Прошивка',
+    devHW: 'Железо', devMfr: 'Производитель', devSerial: 'Серийный №',
+    connect: 'Подключить', disconnect: 'Отключить',
+    httpTitle: 'Небезопасное соединение (HTTP)',
+    httpDesc: 'Web Bluetooth требует <strong>HTTPS</strong>. Откройте страницу через <code>https://</code> или с <code>localhost</code>.',
+    noBTTitle: 'Web Bluetooth не поддерживается',
+    noBTDesc: 'Используйте Chrome или Edge на ПК или Android. Safari и Firefox не поддерживают Web Bluetooth.',
+    otaLabel: 'OTA Обновление',
+    otaFlash: 'Прошивка', otaSpiffs: 'SPIFFS / LittleFS',
+    dropTitle: 'Перетащите файл .bin сюда',
+    dropSub: 'или нажмите для выбора',
+    startOTA: 'Начать обновление', abort: 'Прервать',
+    statSent: 'Отправлено', statTotal: 'Всего', statSector: 'Сектор',
+    statSpeed: 'Скорость', statETA: 'Осталось',
+    successTitle: 'Обновление завершено',
+    successSub: 'Устройство перезагружается…',
+    logLabel: 'Журнал', clearLog: 'Очистить',
+    logEnable: 'Журнал', logDisabledMsg: 'Журнал отключён',
+    stDisconnected: 'Отключено',
+    stScanning: 'Поиск…',
+    stConnecting: 'Подключение…',
+    stConnected: 'Подключено',
+    stUploading: 'Обновление…',
+    stCompleted: 'Завершено',
+    stAborted: 'Прервано',
+    stError: 'Ошибка',
+    stConnFailed: 'Ошибка подключения',
+    progTransferring: 'Передача…',
+    progDone: 'Готово',
+    logBTReady: 'Web Bluetooth API готов',
+    logBTNo: 'Web Bluetooth недоступен',
+    logScanning: 'Запуск BLE сканирования…',
+    logFound: 'Подключено к',
+    logDISNo: 'Служба DIS недоступна',
+    logDisconn: 'Устройство отключено',
+    logDisconnMan: 'Отключено вручную',
+    logOtaType: 'Тип OTA',
+    logFileInvalid: 'Неверный файл (нужен .bin)',
+    logCmdAck: 'CMD_ACK resp',
+    logStartOTA: 'СТАРТ',
+    logOtaAccepted: 'OTA принято, передача…',
+    logSectorOK: 'Сектор OK',
+    logOtaDone: 'OTA завершено!',
+    errSignature: 'Ошибка подписи: прошивка отклонена устройством',
+    errNack: 'Команда отклонена устройством',
+    errCmdTimeout: 'Таймаут ответа на команду',
+    errStartFailed: 'Ошибка запуска OTA',
+    errStopFailed: 'Проверка прошивки не пройдена',
+    logAbort: 'Прерывание…',
+    logAborted: 'OTA прервано',
+    logError: 'Ошибка',
+  }
+};
+
+let currentLang = localStorage.getItem('bleLang') || 'it';
+
+function t(key) { return LANGS[currentLang]?.[key] ?? LANGS.en[key] ?? key; }
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  // httpDesc contains HTML tags — use innerHTML
+  if ($('httpDesc')) $('httpDesc').innerHTML = t('httpDesc');
+  const l = LANGS[currentLang];
+  $('langFlag').textContent = l.flag;
+  $('langCode').textContent = l.code;
+  document.documentElement.lang = currentLang;
+  // Update active item
+  document.querySelectorAll('.lang-item').forEach(el => {
+    el.classList.toggle('active', el.textContent.trim().startsWith(l.flag));
+  });
+  // Refresh dynamic status
+  if (!device?.gatt?.connected && !uploading) setStatus(t('stDisconnected'), '');
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('bleLang', lang);
+  applyLang();
+  toggleLangMenu(false);
+  log(`${t('logOtaType')}: ${lang.toUpperCase()}`, 'info');
+}
+
+function toggleLangMenu(force) {
+  const m = $('langMenu');
+  const isOpen = m.classList.contains('open');
+  m.classList.toggle('open', force !== undefined ? force : !isOpen);
+}
+
+// Close menu on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.lang-wrap')) toggleLangMenu(false);
+});
+
+// ════════════════════════════════════════════════
+// Theme
+// ════════════════════════════════════════════════
+let isDark = localStorage.getItem('bleTheme') === 'dark';
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  const icon = $('themeIcon');
+  if (isDark) {
+    icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  } else {
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+  }
+}
+
+function toggleTheme() {
+  isDark = !isDark;
+  localStorage.setItem('bleTheme', isDark ? 'dark' : 'light');
+  applyTheme();
+}
+
+// ════════════════════════════════════════════════
+// BLE Protocol constants
+// ════════════════════════════════════════════════
+const OTA_SVC   = '00008018-0000-1000-8000-00805f9b34fb';
+const RECV_CHAR = '00008020-0000-1000-8000-00805f9b34fb';
+const CMD_CHAR  = '00008022-0000-1000-8000-00805f9b34fb';
+const DIS_SVC   = '0000180a-0000-1000-8000-00805f9b34fb';
+const DIS_MDL   = '00002a24-0000-1000-8000-00805f9b34fb';
+const DIS_SRL   = '00002a25-0000-1000-8000-00805f9b34fb';
+const DIS_FWV   = '00002a26-0000-1000-8000-00805f9b34fb';
+const DIS_HWV   = '00002a27-0000-1000-8000-00805f9b34fb';
+const DIS_MNF   = '00002a29-0000-1000-8000-00805f9b34fb';
+const CMD_FLASH  = 0x0001;
+const CMD_STOP   = 0x0002;
+const CMD_ACK    = 0x0003;
+const CMD_SPIFFS = 0x0004;
+const SECTOR_SZ   = 4096;
+const PKT_PLOAD   = 507;  // max payload — may be reduced by MTU probe
+let   mtuPayload  = PKT_PLOAD; // actual payload used, set at connect time
+
+// ════════════════════════════════════════════════
+// App state
+// ════════════════════════════════════════════════
+let device=null, server=null, recvChar=null, cmdChar=null;
+let file=null, otaType='flash';
+let uploading=false, abortFlag=false, txStart=0;
+
+// ════════════════════════════════════════════════
+// Utils
+// ════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const fmtBytes = b => b<1024?`${b} B`:b<1048576?`${(b/1024).toFixed(1)} KB`:`${(b/1048576).toFixed(2)} MB`;
+const fmtTime  = s => s<60?`${Math.round(s)}s`:`${Math.floor(s/60)}m ${Math.round(s%60)}s`;
+
+function log(msg, cls='info') {
+  if (!logEnabled) return;
+  const el=$('logEl');
+  const ts=new Date().toTimeString().slice(0,8);
+  el.innerHTML+=`<div class="le"><span class="lt">[${ts}]</span><span class="lm ${cls}">${msg}</span></div>`;
+  el.scrollTop=el.scrollHeight;
+}
+
+// Always-visible log — used for errors/warnings regardless of log toggle.
+// Does NOT touch the status bar — only the final catch block does that.
+function logForce(msg, cls='info') {
+  const was = logEnabled;
+  // Auto-open log panel for errors/warnings
+  if (!was && (cls === 'error' || cls === 'warn')) {
+    logEnabled = true;
+    $('logToggleTrack').classList.add('on');
+    $('logEl').classList.remove('hidden');
+    $('logDisabled').classList.add('hidden');
+    $('logClearBtn').classList.remove('hidden');
+  }
+  log(msg, cls);
+  // Keep log open after first error (user needs to read it)
+  if (cls === 'error' || cls === 'warn') logEnabled = true;
+  else logEnabled = was;
+}
+let logEnabled_saved = false;
+const clearLog=()=>{ $('logEl').innerHTML=''; };
+
+// ── Log enable/disable ──
+let logEnabled = localStorage.getItem('bleLog') === 'true'; // default OFF
+
+function applyLogState() {
+  const track   = $('logToggleTrack');
+  const logEl   = $('logEl');
+  const disabled= $('logDisabled');
+  const clearBtn= $('logClearBtn');
+
+  if (logEnabled) {
+    track.classList.add('on');
+    logEl.classList.remove('hidden');
+    disabled.classList.add('hidden');
+    clearBtn.classList.remove('hidden');
+  } else {
+    track.classList.remove('on');
+    logEl.classList.add('hidden');
+    disabled.classList.remove('hidden');
+    clearBtn.classList.add('hidden');
+  }
+}
+
+function toggleLog() {
+  logEnabled = !logEnabled;
+  localStorage.setItem('bleLog', logEnabled);
+  applyLogState();
+}
+
+
+function setStatus(txt, state='') {
+  $('stText').textContent = txt;
+  $('dot').className = 'dot' + (state ? ' ' + state : '');
+  $('stTime').textContent = new Date().toTimeString().slice(0,8);
+  // Toggle error styling on the pill
+  const pill = $('stText').closest('.status-pill');
+  if (pill) pill.classList.toggle('has-error', state === 'error');
+}
+
+function updateStartBtn() {
+  $('btnStart').disabled=!(device?.gatt?.connected && file && !uploading);
+}
+
+// ════════════════════════════════════════════════
+// BLE
+// ════════════════════════════════════════════════
+function checkBT() {
+  const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+  if (!isSecure) {
+    // HTTP context — Web Bluetooth blocked by browser regardless of support
+    $('httpAlert').classList.remove('hidden');
+    $('btnConnect').disabled = true;
+    // httpDesc uses innerHTML because it contains <strong> and <code>
+    $('httpDesc').innerHTML = t('httpDesc');
+    log(t('httpTitle'), 'error');
+    return;
+  }
+
+  if (!navigator.bluetooth) {
+    $('noBleAlert').classList.remove('hidden');
+    $('btnConnect').disabled = true;
+    log(t('noBTTitle'), 'error');
+  } else {
+    log(t('logBTReady'), 'accent');
+  }
+}
+
+async function connectBLE() {
+  try {
+    setStatus(t('stScanning'),'scanning');
+    log(t('logScanning'),'accent');
+
+    // Only declare the DIS *service* UUID in optionalServices.
+    // Do NOT list individual DIS characteristic UUIDs here — some (like 0x2a25)
+    // are in Chrome's GATT blocklist and will cause requestDevice to throw.
+    device = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [OTA_SVC] }],
+      optionalServices: ['0000180a-0000-1000-8000-00805f9b34fb']
+    });
+
+    device.addEventListener('gattserverdisconnected', onDisc);
+    setStatus(t('stConnecting'), 'scanning');
+    server = await device.gatt.connect();
+    log(`${t('logFound')}: ${device.name || 'Unknown'}`, 'success');
+
+    const otaSvc = await server.getPrimaryService(OTA_SVC);
+    recvChar = await otaSvc.getCharacteristic(RECV_CHAR);
+    cmdChar  = await otaSvc.getCharacteristic(CMD_CHAR);
+    await cmdChar.startNotifications();
+    cmdChar.addEventListener('characteristicvaluechanged', onCmdNotify);
+    await recvChar.startNotifications();
+    recvChar.addEventListener('characteristicvaluechanged', onFwNotify);
+
+    // ── MTU probe ──
+    // Web Bluetooth doesn't expose the negotiated MTU, so we probe it by
+    // attempting writeValueWithoutResponse with decreasing sizes until it
+    // succeeds. This is critical on PC where BLE adapters often use small MTU.
+    mtuPayload = await probeMTU(recvChar);
+    log(`MTU probe → payload=${mtuPayload}B/packet`, 'accent');
+
+    // Read DIS — use full 128-bit UUID strings
+    try {
+      const dis = await server.getPrimaryService('0000180a-0000-1000-8000-00805f9b34fb');
+      await readDIS(dis);
+    } catch(e) {
+      log(`${t('logDISNo')}: ${e.message}`, 'warn');
+    }
+
+    $('dName').textContent = device.name || 'Unknown';
+    $('devGrid').classList.remove('hidden');
+    $('btnConnect').classList.add('hidden');
+    $('btnDisconnect').classList.remove('hidden');
+    setStatus(`${t('stConnected')} · ${device.name || 'Unknown'}`, 'connected');
+    updateStartBtn();
+  } catch(e) {
+    setStatus(t('stConnFailed'), 'error');
+    log(`${t('logError')}: ${e.message}`, 'error');
+    device = null;
+  }
+}
+
+async function readDIS(svc) {
+  // Note: 0x2a25 (Serial Number) is blocklisted by Chrome Web Bluetooth API
+  // for privacy reasons (fingerprinting protection) — we skip it entirely.
+  const map = [
+    ['dModel', '00002a24-0000-1000-8000-00805f9b34fb', 'Model'],
+    ['dFW',    '00002a26-0000-1000-8000-00805f9b34fb', 'Firmware'],
+    ['dHW',    '00002a27-0000-1000-8000-00805f9b34fb', 'Hardware'],
+    ['dMfr',   '00002a29-0000-1000-8000-00805f9b34fb', 'Manufacturer'],
+  ];
+
+  for (const [id, uuid, label] of map) {
+    try {
+      const char = await svc.getCharacteristic(uuid);
+      const raw  = await char.readValue();
+      const v    = new TextDecoder('utf-8')
+                     .decode(raw)
+                     .replace(/\0/g, '')
+                     .trim();
+      $(id).textContent = v || '—';
+      log(`DIS ${label}: "${v}"`, v ? 'success' : 'info');
+    } catch(e) {
+      // Silently skip unavailable characteristics (blocklisted or not present)
+      $(id).textContent = '—';
+    }
+  }
+
+  // Serial Number (0x2a25) is blocklisted by Chrome — mark as N/A
+  $('dSerial').textContent = 'N/A';
+}
+
+function onDisc() {
+  setStatus(t('stError'),'error');
+  log(t('logDisconn'),'warn');
+  resetUI();
+  if(uploading) abortFlag=true;
+}
+
+function disconnectBLE() {
+  if(device?.gatt?.connected) device.gatt.disconnect();
+  resetUI();
+  log(t('logDisconnMan'),'warn');
+}
+
+function resetUI() {
+  device=server=recvChar=cmdChar=null;
+  mtuPayload = PKT_PLOAD;
+  $('btnConnect').classList.remove('hidden');
+  $('btnDisconnect').classList.add('hidden');
+  $('devGrid').classList.add('hidden');
+  ['dName','dModel','dSerial','dFW','dHW','dMfr'].forEach(id=>$(id).textContent='—');
+  setStatus(t('stDisconnected'),'');
+  updateStartBtn();
+}
+
+// ════════════════════════════════════════════════
+// File
+// ════════════════════════════════════════════════
+function setOtaType(tp) {
+  otaType=tp;
+  $('btnFlash').classList.toggle('active',tp==='flash');
+  $('btnSpiffs').classList.toggle('active',tp==='spiffs');
+  log(`${t('logOtaType')}: ${tp.toUpperCase()}`,'info');
+}
+
+function onFilePick(e) { if(e.target.files[0]) selectFile(e.target.files[0]); }
+
+function selectFile(f) {
+  file=f;
+  $('fileBadge').classList.remove('hidden');
+  $('fileName').textContent=f.name;
+  $('fileSize').textContent=fmtBytes(f.size);
+  log(`File: ${f.name} (${fmtBytes(f.size)})`,'success');
+  updateStartBtn();
+}
+
+const dz=$('dropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('over');
+  const f=e.dataTransfer.files[0];
+  f?.name.endsWith('.bin')?selectFile(f):log(t('logFileInvalid'),'error');
+});
+
+// ════════════════════════════════════════════════
+// Protocol
+// ════════════════════════════════════════════════
+
+// CRC16 CCITT — accepts optional init value (default 0), matches React app
+function crc16(data, init = 0) {
+  let c = init;
+  for (let i = 0; i < data.length; i++) {
+    c ^= data[i] << 8;
+    for (let j = 0; j < 8; j++) {
+      c = (c & 0x8000) ? ((c << 1) ^ 0x1021) & 0xffff : (c << 1) & 0xffff;
+    }
+  }
+  return c & 0xffff;
+}
+
+// Incremental CRC — same as React: crc16(prevCrc, chunk, len)
+// Keeps running CRC across multiple chunks of a sector.
+function crc16incr(prev, chunk) {
+  return crc16(chunk, prev);
+}
+
+// ACK state — use simple flags like the React app (not Promise-based)
+let cmdStatus  = 0;   // 0=waiting, 1=ok, -1=nack, -2=signature error
+let cmdErrMsg  = '';  // human-readable reason for cmdStatus < 0
+let expectedCmd = 0;  // which command ID we are waiting ACK for
+let fwStatus   = 0;   // 0=waiting, 1=ok, -1=nack
+let expectedSector = 0;
+
+function onCmdNotify(e) {
+  const d = new DataView(e.target.value.buffer);
+  if (d.byteLength < 20) return;
+  const crcRecv = d.getUint16(18, true);
+  const buf = new Uint8Array(d.buffer, 0, 18);
+  if (crc16(buf) !== crcRecv) return;
+  if (d.getUint16(0, true) === CMD_ACK) {
+    const forCmd = d.getUint16(2, true);
+    const ans    = d.getUint16(4, true);
+
+    // Ignore ACKs for commands we are not currently waiting for
+    if (forCmd !== expectedCmd) {
+      log(`CMD_ACK ignored (forCmd=0x${forCmd.toString(16)} expected=0x${expectedCmd.toString(16)})`, 'info');
+      return;
+    }
+
+    if (ans === 0) {
+      cmdStatus = 1;
+      cmdErrMsg = '';
+      log(`CMD_ACK ok (cmd=0x${forCmd.toString(16)})`, 'success');
+    } else if (ans === 3) {
+      // Signature error — ESP32 rejected firmware after RSA verification
+      cmdStatus = -2;
+      cmdErrMsg = t('errSignature');
+      logForce(`CMD_ACK: ${cmdErrMsg} (cmd=0x${forCmd.toString(16)})`, 'error');
+    } else {
+      cmdStatus = -1;
+      cmdErrMsg = t('errNack');
+      logForce(`CMD_ACK NACK (cmd=0x${forCmd.toString(16)} ans=0x${ans.toString(16)})`, 'error');
+    }
+  }
+}
+
+function onFwNotify(e) {
+  const d = new DataView(e.target.value.buffer);
+  if (d.byteLength < 4) return;
+  const sector = d.getUint16(0, true);
+  const ack    = d.getUint16(2, true);
+  if (sector !== expectedSector) return;
+  if (ack === 0) {
+    fwStatus = 1;
+  } else {
+    fwStatus = -1;
+    const errMap = { 1: 'CRC error', 2: `Index error (want ${d.byteLength>=6?d.getUint16(4,true):'?'})`, 3: 'Payload length error', 5: 'Cannot start OTA' };
+    logForce(`FW NACK sector ${sector}: ${errMap[ack] || `0x${ack.toString(16)}`}`, 'error');
+  }
+}
+
+// Returns a Promise that resolves on ACK ok, rejects with error message on nack/signature/timeout
+function waitForCmd(ms = 15000) {
+  return new Promise((resolve, reject) => {
+    if (cmdStatus === 1)  { resolve(); return; }
+    if (cmdStatus < 0)    { reject(new Error(cmdErrMsg)); return; }
+    const iv = setInterval(() => {
+      if (cmdStatus === 1)  { clearInterval(iv); resolve(); }
+      else if (cmdStatus < 0) { clearInterval(iv); reject(new Error(cmdErrMsg)); }
+    }, 50);
+    setTimeout(() => {
+      clearInterval(iv);
+      if (cmdStatus === 0) reject(new Error(t('errCmdTimeout')));
+    }, ms);
+  });
+}
+
+// Generous timeout for FW ACK — BLE on mobile + ESP32 flash write can be slow
+function waitForFw(ms = 60000) {
+  return new Promise((resolve) => {
+    if (fwStatus !== 0) { resolve(fwStatus === 1); return; }
+    const iv = setInterval(() => {
+      if (fwStatus !== 0) { clearInterval(iv); resolve(fwStatus === 1); }
+    }, 20);
+    setTimeout(() => { clearInterval(iv); resolve(false); }, ms);
+  });
+}
+
+// ── MTU probe ──
+// Finds the largest writeValueWithoutResponse payload that succeeds.
+// The OTA packet has a 3-byte header, so usable payload = probed_size - 3.
+async function probeMTU(char) {
+  const candidates = [510, 247, 185, 122, 23];
+  for (const size of candidates) {
+    try {
+      await char.writeValueWithoutResponse(new Uint8Array(size));
+      return size - 3; // subtract 3-byte OTA header → usable payload
+    } catch {
+      // BLE stack rejected this size — try smaller
+    }
+  }
+  return 20; // 23 - 3 header = 20 bytes absolute minimum
+}
+
+function buildCmd(id, payload = []) {
+  const b = new Uint8Array(20);
+  b[0] = id & 0xFF; b[1] = (id >> 8) & 0xFF;
+  payload.forEach((v, i) => { if (i < 16) b[2 + i] = v; });
+  const c = crc16(b.slice(0, 18));
+  b[18] = c & 0xFF; b[19] = (c >> 8) & 0xFF;
+  return b;
+}
+
+// Pre-build all BLE packets for one sector.
+// Returns an array of Uint8Array ready to send with writeValueWithoutResponse.
+function buildSectorPackets(sectorData, secIdx) {
+  const packets = [];
+  let sectorSize = 0;
+  let sequence   = 0;
+  let crc        = 0;
+
+  while (sectorSize < sectorData.length) {
+    let toRead = mtuPayload;
+    if (sectorSize + toRead > sectorData.length) toRead = sectorData.length - sectorSize;
+
+    const chunk   = sectorData.slice(sectorSize, sectorSize + toRead);
+    sectorSize   += toRead;
+    const fLast   = sectorSize >= sectorData.length || sectorSize >= SECTOR_SZ;
+
+    // Incremental CRC on actual bytes sent (same as React app)
+    crc = crc16incr(crc, chunk);
+
+    let pkt;
+    if (fLast) {
+      pkt = new Uint8Array(3 + chunk.length + 2);
+      pkt[0] = secIdx & 0xFF;
+      pkt[1] = (secIdx >> 8) & 0xFF;
+      pkt[2] = 0xFF; // last packet marker
+      pkt.set(chunk, 3);
+      pkt[3 + chunk.length]     = crc & 0xFF;
+      pkt[3 + chunk.length + 1] = (crc >> 8) & 0xFF;
+    } else {
+      pkt = new Uint8Array(3 + chunk.length);
+      pkt[0] = secIdx & 0xFF;
+      pkt[1] = (secIdx >> 8) & 0xFF;
+      pkt[2] = sequence & 0xFF;
+      pkt.set(chunk, 3);
+    }
+
+    packets.push(pkt);
+    sequence++;
+  }
+
+  return packets;
+}
+
+// ════════════════════════════════════════════════
+// OTA — ported faithfully from working React app
+// ════════════════════════════════════════════════
+async function startOTA() {
+  if (!device || !file || uploading) return;
+  uploading = true; abortFlag = false;
+  $('btnStart').classList.add('hidden');
+  $('btnAbort').classList.remove('hidden');
+  $('successBox').classList.remove('show');
+  $('progSection').classList.remove('hidden');
+  setStatus(t('stUploading'), 'uploading');
+  updateProg(0, file.size, 0);
+  txStart = Date.now();
+
+  try {
+    const data  = new Uint8Array(await file.arrayBuffer());
+    const total = data.length;
+    const cmdId = otaType === 'flash' ? CMD_FLASH : CMD_SPIFFS;
+
+    // ── Send START command ──
+    const startCmd = buildCmd(cmdId, [
+      total & 0xFF, (total >> 8) & 0xFF,
+      (total >> 16) & 0xFF, (total >> 24) & 0xFF
+    ]);
+    cmdStatus = 0; cmdErrMsg = '';
+    expectedCmd = cmdId; // expect ACK for START (0x0001 or 0x0004)
+    await cmdChar.writeValueWithoutResponse(startCmd);
+    log(`${t('logStartOTA')} ${otaType.toUpperCase()} size=${total}`, 'accent');
+
+    // Wait for START ACK — abort on any failure (NACK, signature error, timeout)
+    try {
+      await waitForCmd(15000);
+      log(t('logOtaAccepted'), 'success');
+    } catch(e) {
+      throw new Error(`${t('errStartFailed')}: ${e.message}`);
+    }
+
+    // ── Send firmware sector by sector ── 
+    // Strategy: send all packets of a sector as fast as possible (burst),
+    // then wait for ACK. If CRC error or timeout → retry the sector (max 3x).
+    // This is fast on all platforms and self-healing on lossy BLE connections.
+    let writtenSize = 0;
+    const MAX_RETRIES = 3;
+
+    while (writtenSize < total && !abortFlag) {
+      const sector = data.slice(writtenSize, writtenSize + SECTOR_SZ);
+      if (sector.length === 0) break;
+
+      const secIdx = Math.floor(writtenSize / SECTOR_SZ);
+
+      // Pre-build all packets for this sector so we can resend quickly on retry
+      const packets = buildSectorPackets(sector, secIdx);
+
+      let success = false;
+      for (let attempt = 0; attempt < MAX_RETRIES && !abortFlag; attempt++) {
+        if (attempt > 0) {
+          log(`Retry sector ${secIdx} (attempt ${attempt + 1})`, 'warn');
+          await new Promise(r => setTimeout(r, 200)); // small pause before retry
+        }
+
+        // Reset ACK state before sending last packet
+        fwStatus       = 0;
+        expectedSector = secIdx;
+
+        // Send all packets in burst — writeValueWithoutResponse is fire-and-forget
+        for (let i = 0; i < packets.length; i++) {
+          await recvChar.writeValueWithoutResponse(packets[i]);
+          // Tiny yield to let the JS event loop process BLE notifications
+          // without adding real latency — avoids starving the notification handler
+          if (i % 8 === 7) await new Promise(r => setTimeout(r, 0));
+        }
+
+        // Wait for sector ACK
+        const fwOk = await waitForFw(15000);
+        if (fwOk) {
+          success = true;
+          break;
+        }
+        // fwStatus -1 = NACK (CRC/index error), 0 = timeout — both trigger retry
+      }
+
+      if (!success) {
+        throw new Error(`Sector ${secIdx} failed after ${MAX_RETRIES} attempts`);
+      }
+
+      writtenSize += sector.length;
+      const elapsed = (Date.now() - txStart) / 1000;
+      const speed   = elapsed > 0 ? writtenSize / elapsed : 0;
+      const eta     = speed > 0 ? (total - writtenSize) / speed : 0;
+      updateProg(writtenSize, total, secIdx + 1, speed, eta);
+      log(`${t('logSectorOK')} ${secIdx + 1} — ${fmtBytes(writtenSize)}/${fmtBytes(total)}`, 'success');
+
+      if (abortFlag) break;
+    }
+
+    if (abortFlag) {
+      await cmdChar.writeValueWithoutResponse(buildCmd(CMD_STOP));
+      log(t('logAborted'), 'warn');
+      setStatus(t('stAborted'), 'error');
+      try { device.gatt.disconnect(); } catch {}
+    } else {
+      // Send STOP — ESP32 verifies signature here (if secure OTA)
+      cmdStatus = 0; cmdErrMsg = '';
+      expectedCmd = CMD_STOP; // expect ACK for STOP (0x0002) — signature verified here
+      await cmdChar.writeValueWithoutResponse(buildCmd(CMD_STOP));
+      log('STOP inviato, attendo conferma…', 'info');
+
+      try {
+        await waitForCmd(15000);
+        // ACK ok → device reboots with new firmware
+        await new Promise(r => setTimeout(r, 500));
+        try { device.gatt.disconnect(); } catch {}
+        log(t('logOtaDone'), 'success');
+        setStatus(t('stCompleted'), 'connected');
+        $('progSection').classList.add('hidden');
+        $('successBox').classList.add('show');
+      } catch(e) {
+        // STOP rejected — most likely signature verification failed on ESP32
+        try { device.gatt.disconnect(); } catch {}
+        throw new Error(`${t('errStopFailed')}: ${e.message}`);
+      }
+    }
+
+  } catch(e) {
+    logForce(`${t('logError')}: ${e.message}`, 'error');
+    setStatus(e.message, 'error');
+    try { await cmdChar.writeValueWithoutResponse(buildCmd(CMD_STOP)); } catch {}
+    try { device.gatt.disconnect(); } catch {}
+  }
+
+  uploading = false; abortFlag = false;
+  $('btnStart').classList.remove('hidden');
+  $('btnAbort').classList.add('hidden');
+  updateStartBtn();
+}
+
+function abortOTA(){abortFlag=true;log(t('logAbort'),'warn');}
+
+function updateProg(sent,total,sec,speed,eta) {
+  const p=total>0?Math.round(sent/total*100):0;
+  $('progFill').style.width=p+'%';
+  $('progPct').textContent=p+'%';
+  $('sSent').textContent=fmtBytes(sent);
+  $('sTotal').textContent=fmtBytes(total);
+  $('sSector').textContent=sec;
+  $('sSpeed').textContent=speed!=null&&speed>0?fmtBytes(Math.round(speed))+'/s':'—';
+  $('sETA').textContent=eta!=null&&eta>0?fmtTime(eta):'—';
+  $('progLabel').textContent=p<100?t('progTransferring'):t('progDone');
+}
+
+// ── Sync log height to left column ──
+// Uses ResizeObserver to automatically track col-left height changes
+// (device grid appearing, progress bar expanding, etc.)
+let _syncObserver = null;
+
+function syncLogHeight() {
+  if (window.innerWidth < 1024) return;
+
+  const colLeft    = $('colLeft');
+  const colRight   = $('colRight');
+  const logCard    = $('logCard');
+  const logWrap    = $('logEl');
+  const logDisabled= $('logDisabled');
+  if (!colLeft || !colRight || !logCard || !logWrap) return;
+
+  const leftH = colLeft.getBoundingClientRect().height;
+  if (leftH < 100) return;
+
+  colRight.style.height   = leftH + 'px';
+  logCard.style.height    = leftH + 'px';
+  logCard.style.boxSizing = 'border-box';
+
+  const style  = getComputedStyle(logCard);
+  const padTop = parseFloat(style.paddingTop);
+  const padBot = parseFloat(style.paddingBottom);
+  const labelEl= logCard.querySelector('.card-label');
+  const labelH = labelEl ? labelEl.getBoundingClientRect().height + 10 : 36;
+  const wrapH  = Math.max(80, leftH - padTop - padBot - labelH);
+
+  logWrap.style.height     = wrapH + 'px';
+  logWrap.style.maxHeight  = wrapH + 'px';
+  logWrap.style.flexShrink = '0';
+  logDisabled.style.height = wrapH + 'px';
+}
+
+function initSyncObserver() {
+  const colLeft = $('colLeft');
+  if (!colLeft) return;
+  if (_syncObserver) _syncObserver.disconnect();
+  _syncObserver = new ResizeObserver(() => {
+    if (window.innerWidth >= 1024) syncLogHeight();
+  });
+  _syncObserver.observe(colLeft);
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth < 1024) {
+    // Reset inline styles on mobile so CSS takes over
+    const colRight = $('colRight');
+    const logCard  = $('logCard');
+    const logWrap  = $('logEl');
+    const logDis   = $('logDisabled');
+    if (colRight)  colRight.style.height   = '';
+    if (logCard)   { logCard.style.height  = ''; logCard.style.boxSizing = ''; }
+    if (logWrap)   { logWrap.style.height  = ''; logWrap.style.maxHeight = ''; }
+    if (logDis)    logDis.style.height     = '';
+  } else {
+    syncLogHeight();
+  }
+});
+applyTheme();
+applyLang();
+applyLogState();
+checkBT();
+setStatus(t('stDisconnected'),'');
+requestAnimationFrame(() => { initSyncObserver(); syncLogHeight(); });
+</script>
+</body>
+</html>
