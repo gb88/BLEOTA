@@ -3,6 +3,12 @@
 Library inspired by https://components.espressif.com/components/espressif/ble_ota that implement the firmware and SPIFFS/LittleFS 
 OTA via BLE and writes it to flash, sector by sector, until the upgrade is complete.
 
+The version 1.2.0 is still compatible with the older code just create the object
+```
+BLEOTAClass BLEOTA;
+```
+at the beginning of the code. The library has been extended to support [Nimble stack](#9-nimble).
+
 ## 1. Services definition
 
 The library add two services:
@@ -34,8 +40,8 @@ The `OTA Service` can contains 2 characteristics to perform the OTA process.
 
 |  Characteristics   | UUID  |  Prop   | description  |
 |  ----  | ----  |  ----  | ----  |
-|  RECV_FW_CHAR | 00008020-0000-1000-8000-00805f9b34fb | Write, WriteNR, Notify  | Firmware received, send ACK |
-|  COMMAND_CHAR  | 00008022-0000-1000-8000-00805f9b34fb | Write, WriteNR, Notify  | Send the command and ACK |
+|  RECV_FW_CHAR | 00008020-0000-1000-8000-00805f9b34fb | Write, Notify  | Firmware received, send ACK |
+|  COMMAND_CHAR  | 00008022-0000-1000-8000-00805f9b34fb | Write, Notify  | Send the command and ACK |
 
 
 ## 4. OTA Service data transmission details
@@ -242,9 +248,15 @@ Since the **progress** function will reset the ESP32 500ms after the completion 
 //to avoid reset after OTA success and manage it in the callback or somewhere else call
 BLEOTA.process(false); 
 ```
-
 ## 9. NimBLE
-Nimble port can be found here [BLEOTANimble](https://github.com/gb88/BLEOTANimble/)
+In the version older 1.0.3 the support of Nimble has been added, this reduce the flash usage of **46%**. To use the Nimble version this library must be installed [NimBLE-Arduino](https://github.com/gb88/NimBLE-Arduino)  
+```
+//include the NimBLEOTA version
+#include "NimBLEOTA.h"
+//create the NimBLEOTA object 
+NimBLEOTAClass BLEOTA;
+```
+For the newer version the library is compatible with official Nimble repository [Nimble](https://github.com/h2zero/)
 
 ## 10. WebApp
 [BLEOTA_WEBAPP](https://gb88.github.io/BLEOTA/)
