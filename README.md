@@ -2,12 +2,7 @@
 
 Library inspired by https://components.espressif.com/components/espressif/ble_ota that implement the firmware and SPIFFS/LittleFS 
 OTA via BLE and writes it to flash, sector by sector, until the upgrade is complete.
-
-The version 1.2.0 is still compatible with the older code just create the object
-```
-BLEOTAClass BLEOTA;
-```
-at the beginning of the code. The library has been extended to support [Nimble stack](#9-nimble).
+The library can work with both BlueDroid and Nimble stack.
 
 ## 1. Services definition
 
