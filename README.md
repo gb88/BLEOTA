@@ -251,7 +251,7 @@ In the version older 1.0.3 the support of Nimble has been added, this reduce the
 //create the NimBLEOTA object 
 NimBLEOTAClass BLEOTA;
 ```
-For the newer version the library is compatible with official Nimble repository [Nimble](https://github.com/h2zero/)
+For the newer version the library is compatible with official Nimble repository [Nimble]([https://github.com/h2zero/] https://github.com/h2zero/NimBLE-Arduino)
 
 ## 10. WebApp
 [BLEOTA_WEBAPP](https://gb88.github.io/BLEOTA/)
