@@ -9,6 +9,12 @@ class NimBLErecvFWCallback : public NimBLECharacteristicCallbacks {
   }
   private:
   void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
+    onWrite(pCharacteristic);
+  }
+  void onWrite(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc) {
+    onWrite(pCharacteristic);
+  }
+  void onWrite(NimBLECharacteristic* pCharacteristic) {
     if (pCharacteristic->getValue().length() >= 4) {
       NimBLEAttValue data = pCharacteristic->getValue();
       _ota->FWHandler((uint8_t*)data.c_str(), pCharacteristic->getValue().length());
@@ -25,6 +31,12 @@ class NimBLEcommandCallback : public NimBLECharacteristicCallbacks {
   }
   private:
   void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
+    onWrite(pCharacteristic);
+  }
+  void onWrite(NimBLECharacteristic* pCharacteristic, ble_gap_conn_desc* desc) {
+    onWrite(pCharacteristic);
+  }
+  void onWrite(NimBLECharacteristic* pCharacteristic) {
     if (pCharacteristic->getValue().length() >= 20) {
       NimBLEAttValue data = pCharacteristic->getValue();
       _ota->CommandHandler((uint8_t*)data.c_str(), pCharacteristic->getValue().length());
