@@ -1,5 +1,5 @@
 #include "BLEOTA.h"
-BLEOTAClass BLEOTA;
+
 class recvFWCallback : public BLECharacteristicCallbacks {
   public:
   BLEOTAClass * _ota = NULL;

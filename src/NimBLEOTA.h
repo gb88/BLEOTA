@@ -24,5 +24,5 @@ class NimBLEOTAClass: public BLEOTABase {
 	void sendCommandAnswer(uint16_t command_id, uint16_t status);
 	void sendFWAnswer(uint16_t index, uint16_t status);
 };
-extern NimBLEOTAClass BLEOTA;
+
 #endif

@@ -28,6 +28,8 @@
 #define HW_VERSION "2"
 #define MANUFACTURER "Espressif"
 
+BLEOTAClass BLEOTA;
+
 BLEServer* pServer = NULL;
 
 bool deviceConnected = false;
