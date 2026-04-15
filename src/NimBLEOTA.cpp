@@ -1,5 +1,5 @@
 #include "NimBLEOTA.h"
- 
+NimBLEOTAClass BLEOTA;
 class NimBLErecvFWCallback : public NimBLECharacteristicCallbacks {
   public:
   NimBLEOTAClass * _ota = NULL;
