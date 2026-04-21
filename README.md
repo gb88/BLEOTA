@@ -613,27 +613,6 @@ A fully-static Web Bluetooth client lives in `docs/` and is published at **<http
 - **Use `writeValueWithoutResponse`** on the RECV characteristic. The included WebApp does; so should custom clients. Per-packet responses would roughly halve throughput.
 - **Keep `loop()` light during updates.** Suspend non-essential tasks inside `beforeStartOTA` / `beforeStartSPIFFS` (e.g. `vTaskSuspend`, stop ADC DMA, disable LED PWM…).
 
-### Flash footprint
-
-The footprint depends on which stack the core picked for your chip — BlueDroid (classic ESP32) is larger, NimBLE (S3/C3/C6/H2) is lighter. BLEOTA itself adds on top of that:
-
-| BLEOTA option       | Approximate cost |
-| ------------------- | ---------------- |
-| Core library        | ~12 KB           |
-| Secure mode         | + ~20 KB (mbedtls PK + SHA-256 routines, linked lazily) |
-| DIS service         | + < 1 KB         |
-| Compression support | + ~6 KB          |
-
-### Indicative numbers
-
-Numbers measured on ESP32-WROOM-32 / MTU 247 / Android Chrome, give or take antenna & RF environment:
-
-| Payload                            | Raw      | zlib-compressed |
-| ---------------------------------- | -------- | --------------- |
-| 1 MB firmware (`.bin`)              | ~14 s    | ~10 s           |
-| 4 MB firmware                      | ~55 s    | ~38 s           |
-| 1 MB SPIFFS (mostly HTML/JSON)     | ~15 s    | ~3 s            |
-
 ---
 
 ## 14. Writing your own client
