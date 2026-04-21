@@ -36,10 +36,22 @@ bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
 class ServerCallbacks : public BLEServerCallbacks {
+  // Portable base overload — compiles on every stack (BlueDroid and
+  // NimBLE-backed BLEDevice.h of core 3.3.0+).
+  void onConnect(BLEServer* pServer) {
+    deviceConnected = true;
+  };
+
+#if defined(CONFIG_BLUEDROID_ENABLED)
+  // BlueDroid-only extra overload: lets us request tighter connection
+  // parameters using the just-connected peer's address. On NimBLE
+  // (S3/C3/C6/H2 with core 3.3.0+) this overload doesn't exist and is
+  // skipped by the preprocessor.
   void onConnect(BLEServer* pServer, esp_ble_gatts_cb_param_t* param) {
     deviceConnected = true;
     pServer->updateConnParams(param->connect.remote_bda, 0x06, 0x12, 0, 2000);
   };
+#endif
 
   void onDisconnect(BLEServer* pServer) {
     deviceConnected = false;
