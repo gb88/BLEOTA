@@ -851,6 +851,5 @@ Bundled third-party components:
 - [espressif/ble_ota](https://components.espressif.com/components/espressif/ble_ota) — original protocol design.
 - [vortigont/esp32-flashz](https://github.com/vortigont/esp32-flashz) — on-device zlib decompression.
 - [@drik](https://github.com/drik) — user callbacks mechanism.
-- The arduino-esp32 team — for the unified dual-stack `BLEDevice.h` wrapper in 3.3.0, which made the clean single-backend path in BLEOTA 1.0.6 possible.
 
 Contributions welcome — open an issue or a PR on [github.com/gb88/BLEOTA](https://github.com/gb88/BLEOTA).
